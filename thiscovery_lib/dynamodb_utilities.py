@@ -23,12 +23,13 @@ import thiscovery_lib.utilities as utils
 
 
 class Dynamodb(utils.BaseClient):
-    def __init__(self, correlation_id=None):
+    def __init__(self, stack_name='thiscovery-core', correlation_id=None):
         super().__init__('dynamodb', client_type='resource', correlation_id=correlation_id)
         super().get_namespace()
+        self.stack_name = stack_name
 
-    def get_table(self, table_name, stack_name='thiscovery-core'):
-        table_full_name = '-'.join([stack_name, self.aws_namespace, table_name])
+    def get_table(self, table_name):
+        table_full_name = '-'.join([self.stack_name, self.aws_namespace, table_name])
         self.logger.debug('Table full name', extra={'table_full_name': table_full_name})
         return self.client.Table(table_full_name)
 
