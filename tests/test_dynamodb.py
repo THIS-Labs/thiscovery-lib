@@ -15,12 +15,13 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
-
-from dateutil import parser
-from thiscovery_lib import dynamodb_utilities as ddb_utils
+import local.dev_config  # sets env variables TEST_ON_AWS and AWS_TEST_API
+import local.secrets  # sets env variables THISCOVERY_AFS25_PROFILE and THISCOVERY_AMP205_PROFILE
+import thiscovery_dev_tools.testing_tools as test_utils
 
 import thiscovery_lib.utilities as utils
-import testing_utilities as test_utils
+from thiscovery_lib import dynamodb_utilities as ddb_utils
+
 
 TEST_TABLE_NAME = 'testdata'
 TIME_TOLERANCE_SECONDS = 10

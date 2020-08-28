@@ -49,18 +49,19 @@ def namespace2profile(namespace):
     Maps namespaces in dev_config.py to profiles in ~/.aws/credentials
     """
     if not running_on_aws():
-        from api.local.secrets import THISCOVERY_PROD_PROFILE, THISCOVERY_STAGING_PROFILE, THISCOVERY_AFS25_PROFILE, THISCOVERY_AMP205_PROFILE
-
-        namespace2profile_map = {
-            '/prod/': THISCOVERY_PROD_PROFILE,
-            '/staging/': THISCOVERY_STAGING_PROFILE,
-            '/dev-afs25/': THISCOVERY_AFS25_PROFILE,
-            '/test-afs25/': THISCOVERY_AFS25_PROFILE,
-            '/dev-amp205/': THISCOVERY_AMP205_PROFILE,
-            '/test-amp205/': THISCOVERY_AMP205_PROFILE,
+        namespace2env_var_name = {
+            '/prod/': 'THISCOVERY_PROD_PROFILE',
+            '/staging/': 'THISCOVERY_STAGING_PROFILE',
+            '/dev-afs25/': 'THISCOVERY_AFS25_PROFILE',
+            '/test-afs25/': 'THISCOVERY_AFS25_PROFILE',
+            '/dev-amp205/': 'THISCOVERY_AMP205_PROFILE',
+            '/test-amp205/': 'THISCOVERY_AMP205_PROFILE',
         }
-
-        return namespace2profile_map.get(namespace)
+        env_var_name = namespace2env_var_name.get(namespace)
+        try:
+            return os.environ[env_var_name]
+        except KeyError:
+            raise DetailedValueError(f'{env_var_name} environment variable not defined', {})
 
 
 PRODUCTION_ENV_NAME = 'prod'
@@ -538,17 +539,17 @@ def get_aws_region():
 
 
 def get_aws_namespace():
-    if running_on_aws():
+    try:
+        secrets_namespace = os.environ['SECRETS_NAMESPACE']
+    except KeyError:
+        raise DetailedValueError('SECRETS_NAMESPACE environment variable not defined', {})
+
+    if running_unit_tests():
         try:
-            secrets_namespace = os.environ['SECRETS_NAMESPACE']
+            secrets_namespace = os.environ['UNIT_TEST_NAMESPACE']
         except KeyError:
-            raise DetailedValueError('SECRETS_NAMESPACE environment variable not defined', {})
-    else:
-        from common.dev_config import UNIT_TEST_NAMESPACE, SECRETS_NAMESPACE
-        if running_unit_tests():
-            secrets_namespace = UNIT_TEST_NAMESPACE
-        else:
-            secrets_namespace = SECRETS_NAMESPACE
+            raise DetailedValueError('UNIT_TEST_NAMESPACE environment variable not defined', {})
+
     return secrets_namespace
 
 
