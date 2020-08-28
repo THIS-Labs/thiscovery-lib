@@ -5,14 +5,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="thiscovery-lib", # Replace with your own username
-    version="2020.1",
+    version="2020.3",
     author="Thiscovery team",
     author_email="support@thiscovery.org",
     description="Thiscovery library",
     install_requires=[
         'boto3',
         'botocore',
-        'dateutil',
+        'python-dateutil',
         'epsagon',
         'python-json-logger',
         'requests',
@@ -21,6 +21,9 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/THIS-Institute/thiscovery-lib",
+    package_data={
+        'thiscovery_lib': ['countries.json'],
+    },
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
