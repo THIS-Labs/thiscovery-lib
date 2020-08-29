@@ -59,12 +59,20 @@ class Dynamodb(utils.BaseClient):
 
             self.logger.info('dynamodb put', extra={'table_name': table_name, 'item': item, 'correlation_id': self.correlation_id})
             if update_allowed:
-                return table.put_item(Item=item)
+                result = table.put_item(Item=item)
             else:
-                return table.put_item(Item=item, ConditionExpression='attribute_not_exists(id)')
+                result = table.put_item(Item=item, ConditionExpression='attribute_not_exists(id)')
+            assert result['ResponseMetadata']['HTTPStatusCode'] == HTTPStatus.OK, f'Dynamodb call failed with response {result}'
+            return result
         except ClientError as ex:
             error_code = ex.response['Error']['Code']
-            errorjson = {'error_code': error_code, 'table_name': table_name, 'item_type': item_type, 'id': str(key), 'correlation_id': self.correlation_id}
+            errorjson = {
+                'error_code': error_code,
+                'table_name': table_name,
+                'item_type': item_type,
+                'id': str(key),
+                'correlation_id': self.correlation_id
+            }
             raise utils.DetailedValueError('Dynamodb raised an error', errorjson)
 
     def update_item(self, table_name: str, key: str, name_value_pairs: dict, correlation_id=None, **kwargs):
