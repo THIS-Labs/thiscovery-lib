@@ -69,6 +69,8 @@ STAGING_ENV_NAME = 'staging'
 
 PRODUCTION_NAMESPACE = name2namespace(PRODUCTION_ENV_NAME)
 STAGING_NAMESPACE = name2namespace(STAGING_ENV_NAME)
+
+
 # endregion
 
 
@@ -80,10 +82,14 @@ class DetailedValueError(ValueError):
 
     def as_response_body(self):
         try:
-            return json.dumps({'message': self.message, **self.details})
+            return json.dumps({
+                                  'message': self.message, **self.details
+                              })
         except TypeError:
             print(f"message: {self.message}; details: {self.details}")
-            return json.dumps({'message': self.message, **self.details})
+            return json.dumps({
+                                  'message': self.message, **self.details
+                              })
 
     def add_correlation_id(self, correlation_id):
         self.details['correlation_id'] = str(correlation_id)
@@ -114,19 +120,32 @@ class DetailedIntegrityError(DetailedValueError):
 
 
 def error_as_response_body(error_msg, correlation_id):
-    return json.dumps({'error': error_msg, 'correlation_id': str(correlation_id)})
+    return json.dumps({
+                          'error': error_msg,
+                          'correlation_id': str(correlation_id)
+                      })
 
 
 def log_exception_and_return_edited_api_response(exception, status_code, logger_instance, correlation_id):
     if isinstance(exception, DetailedValueError):
         exception.add_correlation_id(correlation_id)
         logger_instance.error(exception)
-        return {"statusCode": status_code, "body": exception.as_response_body()}
+        return {
+            "statusCode": status_code,
+            "body": exception.as_response_body()
+        }
 
     else:
         error_message = exception.args[0]
-        logger_instance.error(error_message, extra={'correlation_id': correlation_id})
-        return {"statusCode": status_code, "body": error_as_response_body(error_message, correlation_id)}
+        logger_instance.error(error_message, extra={
+            'correlation_id': correlation_id
+        })
+        return {
+            "statusCode": status_code,
+            "body": error_as_response_body(error_message, correlation_id)
+        }
+
+
 # endregion
 
 
@@ -141,6 +160,8 @@ def set_running_unit_tests(flag):
 def running_unit_tests():
     testing = os.getenv("TESTING")
     return testing == 'true'
+
+
 # endregion
 
 
@@ -191,6 +212,8 @@ def obfuscate_data(input, item_key_path):
     except TypeError:
         # if called with None or non-subscriptable arguments then do nothing
         pass
+
+
 # endregion
 
 
@@ -207,7 +230,9 @@ def validate_int(s):
         int(s)
         return s
     except ValueError:
-        errorjson = {'int': s}
+        errorjson = {
+            'int': s
+        }
         raise DetailedValueError('invalid integer', errorjson)
 
 
@@ -215,11 +240,15 @@ def validate_uuid(s):
     try:
         uuid.UUID(s, version=4)
         if uuid.UUID(s).version != 4:
-            errorjson = {'uuid': s}
+            errorjson = {
+                'uuid': s
+            }
             raise DetailedValueError('uuid is not version 4', errorjson)
         return s
     except (ValueError, TypeError):
-        errorjson = {'uuid': s}
+        errorjson = {
+            'uuid': s
+        }
         raise DetailedValueError('invalid uuid', errorjson)
 
 
@@ -229,7 +258,9 @@ def validate_utc_datetime(s):
         parser.isoparse(s)
         return s
     except ValueError:
-        errorjson = {'datetime': s}
+        errorjson = {
+            'datetime': s
+        }
         raise DetailedValueError('invalid utc format datetime', errorjson)
 
 
@@ -237,7 +268,9 @@ def validate_url(s):
     if validators.url(s):
         return s
     else:
-        errorjson = {'url': s}
+        errorjson = {
+            'url': s
+        }
         raise DetailedValueError('invalid url', errorjson)
 
 
@@ -245,8 +278,12 @@ def validate_boolean(s):
     if s in ['true', 'True', 'false', 'False', '0', '1']:
         return s
     else:
-        errorjson = {'boolean': s}
+        errorjson = {
+            'boolean': s
+        }
         raise DetailedValueError('invalid boolean', errorjson)
+
+
 # endregion
 
 
@@ -272,11 +309,13 @@ def _get_default_session(profile_name):
     """
     if DEFAULT_SESSION is None:
         setup_default_session(profile_name)
+    elif DEFAULT_SESSION.profile_name != profile_name:
+        setup_default_session(profile_name)
     return DEFAULT_SESSION
 
 
 class BaseClient:
-    def __init__(self, service_name, profile_name=None, client_type='low-level', correlation_id=None):
+    def __init__(self, service_name, profile_name=None, client_type='low-level', correlation_id=None, **kwargs):
         """
         Args:
             service_name (str): AWS service name (e.g. dynamodb, lambda, etc)
@@ -287,9 +326,9 @@ class BaseClient:
             profile_name = namespace2profile(get_aws_namespace())
         session = _get_default_session(profile_name)
         if client_type == 'low-level':
-            self.client = session.client(service_name)
+            self.client = session.client(service_name, **kwargs)
         elif client_type == 'resource':
-            self.client = session.resource(service_name)
+            self.client = session.resource(service_name, **kwargs)
         else:
             raise NotImplementedError(f"client_type can only be 'low-level' or 'resource', not {client_type}")
         self.logger = get_logger()
@@ -340,8 +379,8 @@ class SsmClient(BaseClient):
 
 
 class SecretsManager(BaseClient):
-    def __init__(self):
-        super().__init__('secretsmanager')
+    def __init__(self, profile_name=None):
+        super().__init__('secretsmanager', profile_name=profile_name)
 
     def _prefix_name(self, name, prefix):
         if prefix is None:
@@ -393,10 +432,13 @@ class SecretsManager(BaseClient):
             assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'Call to boto3.client.update_secret failed with response: {response}'
         except Exception as exception:
             error_message = exception.args[0]
-            self.logger.error(error_message)
+            self.logger.debug(error_message)
             response = self._create_secret(secret_id, value)
             assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'Call to boto3.client.create_secret failed with response: {response}'
+            self.logger.info(f'Added new secret {secret_id} with value {value}')
         return response
+
+
 # endregion
 
 
@@ -507,6 +549,8 @@ def get_logger():
         logger.setLevel(logging.DEBUG)
         logger.propagate = False
     return logger
+
+
 # endregion
 
 
@@ -523,6 +567,8 @@ def get_correlation_id(event):
     except (KeyError, TypeError):  # KeyError if no correlation_id in headers, TypeError if no headers
         correlation_id = new_correlation_id()
     return str(correlation_id)
+
+
 # endregion
 
 
@@ -596,8 +642,21 @@ def get_secret(secret_name, namespace_override=None):
     # need to prepend secret name with namespace...
     if namespace_override is None:
         namespace = get_aws_namespace()
+        profile = None
     else:
         namespace = namespace_override
+        try:
+            profile_map_json = os.environ['THISCOVERY_PROFILE_MAP']
+        except KeyError:
+            raise DetailedValueError('Environment variable THISCOVERY_PROFILE_MAP not set', details={})
+        profile_map = json.loads(profile_map_json)
+        profile_key = namespace2name(namespace_override)
+        try:
+            profile = profile_map[profile_key]
+        except KeyError:
+            raise DetailedValueError(f'Environment variable THISCOVERY_PROFILE_MAP does not include key {profile_key}', details={
+                'profile_map': profile_map
+            })
 
     if namespace is not None:
         secret_name = namespace + secret_name
@@ -605,7 +664,7 @@ def get_secret(secret_name, namespace_override=None):
     logger.info('get_aws_secret: ' + secret_name)
 
     secret = None
-    client = SecretsManager()
+    client = SecretsManager(profile_name=profile)
 
     try:
         get_secret_value_response = client.get_secret_value(secret_name)
@@ -637,6 +696,7 @@ def get_secret(secret_name, namespace_override=None):
     finally:
         return secret
 
+
 # endregion
 
 
@@ -665,11 +725,15 @@ def get_country_name(country_code):
     try:
         return countries[country_code]
     except KeyError as err:
-        errorjson = {'country_code': country_code}
+        errorjson = {
+            'country_code': country_code
+        }
         raise DetailedValueError('invalid country code', errorjson)
 
 
 countries = load_countries()
+
+
 # endregion
 
 
@@ -681,6 +745,7 @@ def api_error_handler(func):
         @api_error_handler
         def decorated_function():
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         correlation_id = args[0]['correlation_id']
@@ -694,6 +759,7 @@ def api_error_handler(func):
             return log_exception_and_return_edited_api_response(err, HTTPStatus.BAD_REQUEST, logger, correlation_id)
         except Exception as err:
             return log_exception_and_return_edited_api_response(err, HTTPStatus.INTERNAL_SERVER_ERROR, logger, correlation_id)
+
     return wrapper
 
 
@@ -701,7 +767,6 @@ def lambda_wrapper(func):
     @functools.wraps(func)
     def thiscovery_lambda_wrapper(*args, **kwargs):
         logger = get_logger()
-        start_time = get_start_time()
 
         # check if the lambda event dict includes a correlation id; if it does not, add one and pass it to the wrapped lambda
         # also add a logger to the event dict
@@ -712,18 +777,28 @@ def lambda_wrapper(func):
         updated_args = (event, *args[1:])
 
         result = func(*updated_args, **kwargs)
-        logger.info('Decorated function result and execution time', extra={'decorated func module': func.__module__, 'decorated func name': func.__name__,
-                                                                           'result': result, 'func args': args, 'func kwargs': kwargs,
-                                                                           'elapsed_ms': get_elapsed_ms(start_time), 'correlation_id': correlation_id})
+        logger.info('Decorated function result', extra={
+            'decorated func module': func.__module__,
+            'decorated func name': func.__name__,
+            'result': result,
+            'func args': args,
+            'func kwargs': kwargs,
+            'correlation_id': correlation_id
+        })
         return result
+
     return thiscovery_lambda_wrapper
+
+
 # endregion
 
 
 # region aws api requests
 def aws_request(method, endpoint_url, base_url, params=None, data=None, aws_api_key=None):
     full_url = base_url + endpoint_url
-    headers = {'Content-Type': 'application/json'}
+    headers = {
+        'Content-Type': 'application/json'
+    }
 
     if aws_api_key is None:
         headers['x-api-key'] = get_secret('aws-connection')['aws-api-key']
@@ -738,7 +813,10 @@ def aws_request(method, endpoint_url, base_url, params=None, data=None, aws_api_
             headers=headers,
             data=data,
         )
-        return {'statusCode': response.status_code, 'body': response.text}
+        return {
+            'statusCode': response.status_code,
+            'body': response.text
+        }
     except Exception as err:
         raise err
 
