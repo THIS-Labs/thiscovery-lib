@@ -129,8 +129,17 @@ class Dynamodb(utils.BaseClient):
             **kwargs,
         )
 
-    def scan(self, table_name: str, filter_attr_name: str = None, filter_attr_values=None):
-        table = self.get_table(table_name)
+    def scan(self, table_name: str, filter_attr_name: str = None, filter_attr_values=None, table_name_verbatim=False):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.scan
+
+        Return:
+            A list of dictionaries, each representing an item in the Dynamodb table
+        """
+        if table_name_verbatim:
+            table = self.client.Table(table_name)
+        else:
+            table = self.get_table(table_name)
 
         # accept string but make it into a list for later processing
         if isinstance(filter_attr_values, str):
