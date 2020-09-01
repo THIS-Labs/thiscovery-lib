@@ -23,6 +23,15 @@ class S3Client(utils.BaseClient):
     def __init__(self, profile_name=None):
         super().__init__('s3', profile_name=profile_name)
 
+    def list_objects(self, bucket, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.list_objects_v2
+        """
+        return self.client.list_objects_v2(
+            Bucket=bucket,
+            **kwargs
+        )
+
     def get_object(self, bucket, key, **kwargs):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.get_object
@@ -30,5 +39,45 @@ class S3Client(utils.BaseClient):
         return self.client.get_object(
             Bucket=bucket,
             Key=key,
+            **kwargs
+        )
+
+    def head_object(self, bucket, key, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
+        """
+        return self.client.head_object(
+            Bucket=bucket,
+            Key=key,
+            **kwargs
+        )
+
+    def download_fileobj(self, bucket, key, file_obj, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.download_fileobj
+        """
+        return self.client.download_fileobj(
+            Bucket=bucket,
+            Key=key,
+            Fileobj=file_obj,
+            **kwargs
+        )
+
+    def delete_objects(self, bucket, keys, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.delete_objects
+
+        Args:
+            bucket:
+            keys (list): keys of objects to be deleted
+            **kwargs:
+
+        Returns:
+        """
+        return self.client.delete_objects(
+            Bucket=bucket,
+            Delete={
+                'Objects': [{'Key': x} for x in keys],
+            },
             **kwargs
         )
