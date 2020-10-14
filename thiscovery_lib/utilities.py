@@ -640,23 +640,24 @@ def non_prod_env_url_param(target_env='prod'):
 def get_secret(secret_name, namespace_override=None):
     logger = get_logger()
     # need to prepend secret name with namespace...
+    profile = None
     if namespace_override is None:
         namespace = get_aws_namespace()
-        profile = None
     else:
         namespace = namespace_override
-        try:
-            profile_map_json = os.environ['THISCOVERY_PROFILE_MAP']
-        except KeyError:
-            raise DetailedValueError('Environment variable THISCOVERY_PROFILE_MAP not set', details={})
-        profile_map = json.loads(profile_map_json)
-        profile_key = namespace2name(namespace_override)
-        try:
-            profile = profile_map[profile_key]
-        except KeyError:
-            raise DetailedValueError(f'Environment variable THISCOVERY_PROFILE_MAP does not include key {profile_key}', details={
-                'profile_map': profile_map
-            })
+        if not running_on_aws():
+            try:
+                profile_map_json = os.environ['THISCOVERY_PROFILE_MAP']
+            except KeyError:
+                raise DetailedValueError('Environment variable THISCOVERY_PROFILE_MAP not set', details={})
+            profile_map = json.loads(profile_map_json)
+            profile_key = namespace2name(namespace_override)
+            try:
+                profile = profile_map[profile_key]
+            except KeyError:
+                raise DetailedValueError(f'Environment variable THISCOVERY_PROFILE_MAP does not include key {profile_key}', details={
+                    'profile_map': profile_map
+                })
 
     if namespace is not None:
         secret_name = namespace + secret_name
