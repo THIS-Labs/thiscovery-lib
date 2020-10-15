@@ -160,6 +160,17 @@ class Dynamodb(utils.BaseClient):
         self.logger.info('dynamodb scan result', extra={'count': str(len(items)), 'correlation_id': self.correlation_id})
         return items
 
+    def query(self, table_name, table_name_verbatim=False, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.query
+        """
+        if table_name_verbatim:
+            table = self.client.Table(table_name)
+        else:
+            table = self.get_table(table_name)
+        response = table.query(**kwargs)
+        return response.get('Items')
+
     def get_item(self, table_name: str, key: str, correlation_id=None):
         if correlation_id is None:
             correlation_id = utils.new_correlation_id()
@@ -181,11 +192,30 @@ class Dynamodb(utils.BaseClient):
         self.logger.info('dynamodb delete', extra={'table_name': table_name, 'key': key, 'correlation_id': correlation_id})
         return table.delete_item(Key=key_json)
 
-    def delete_all(self, table_name: str, correlation_id=None):
+    def batch_delete_items(self, table_name, keys):
+        """
+        Args:
+            table_name:
+            keys (list): Ids of items to delete
+        Returns:
+            None (ddb batch_writer does not return anything; see this thread for details:
+            https://stackoverflow.com/a/55424350)
+        """
+        table = self.get_table(table_name=table_name)
+        with table.batch_writer() as batch:
+            for item_id in keys:
+                batch.delete_item(Key={
+                    'id': item_id
+                })
+
+    def delete_all(self, table_name: str, table_name_verbatim=False, correlation_id=None):
         if correlation_id is None:
             correlation_id = utils.new_correlation_id()
-        table = self.get_table(table_name)
-        items = self.scan(table_name)
+        if table_name_verbatim:
+            table = self.client.Table(table_name)
+        else:
+            table = self.get_table(table_name)
+        items = self.scan(table_name, table_name_verbatim=table_name_verbatim)
         for item in items:
             key = item['id']
             key_json = {'id': key}
