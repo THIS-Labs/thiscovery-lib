@@ -15,6 +15,7 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+import base64
 import json
 import thiscovery_lib.utilities as utils
 
@@ -36,12 +37,18 @@ class Lambda(utils.BaseClient):
         else:
             full_name = '-'.join([self.stack_name, self.aws_namespace, function_name])
 
-        return self.client.invoke(
+        response = self.client.invoke(
             FunctionName=full_name,
             InvocationType=invocation_type,
             LogType='Tail',
             Payload=json.dumps(payload).encode('utf-8'),
         )
+        log_result_str = base64.b64decode(response['LogResult']).decode('utf-8')
+        log_result_list = log_result_str.split('\n')
+        log_result = [json.loads(x.split(';1m')[1]) for x in log_result_list if ';1m' in x]
+        response['Payload'] = json.loads(response['Payload'].read().decode('utf-8'))
+        response['LogResult'] = log_result
+        return response
 
     def list_functions(self):
         """
