@@ -15,13 +15,32 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+import json
 import thiscovery_lib.utilities as utils
 
 
 class Lambda(utils.BaseClient):
 
-    def __init__(self):
-        super().__init__('lambda')
+    def __init__(self, stack_name='thiscovery-core', correlation_id=None):
+        super().__init__('lambda', correlation_id=correlation_id)
+        super().get_namespace()
+        self.stack_name = stack_name
+
+    def invoke(self, function_name, function_name_verbatim=False, invocation_type='RequestResponse', payload=None):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html#Lambda.Client.invoke
+        """
+        if function_name_verbatim:
+            full_name = function_name
+        else:
+            full_name = '-'.join([self.stack_name, self.aws_namespace, function_name])
+
+        return self.client.invoke(
+            FunctionName=full_name,
+            InvocationType=invocation_type,
+            LogType='Tail',
+            Payload=json.dumps(payload).encode('utf-8'),
+        )
 
     def list_functions(self):
         """
