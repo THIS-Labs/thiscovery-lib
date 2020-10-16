@@ -26,10 +26,11 @@ class Lambda(utils.BaseClient):
         super().get_namespace()
         self.stack_name = stack_name
 
-    def invoke(self, function_name, function_name_verbatim=False, invocation_type='RequestResponse', payload=None):
+    def invoke(self, function_name, function_name_verbatim=False, invocation_type='RequestResponse', payload=dict()):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html#Lambda.Client.invoke
         """
+        payload = {'correlation_id': self.correlation_id, **payload}
         if function_name_verbatim:
             full_name = function_name
         else:
