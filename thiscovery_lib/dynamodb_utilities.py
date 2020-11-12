@@ -15,7 +15,7 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
-
+import json
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from http import HTTPStatus
@@ -34,15 +34,16 @@ class Dynamodb(utils.BaseClient):
         self.logger.debug('Table full name', extra={'table_full_name': table_full_name})
         return self.client.Table(table_full_name)
 
-    def put_item(self, table_name: str, key, item_type: str, item_details, item=dict(), update_allowed=False, correlation_id=None):
+    def put_item(self, table_name, key, item_type, item_details, item=dict(), key_name='id', update_allowed=False, correlation_id=None):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
         Args:
-            table_name:
-            key:
-            item_type:
+            table_name (str):
+            key (str):
+            item_type (str):
             item_details:
             item:
+            key_name:
             update_allowed:
             correlation_id:
 
@@ -51,7 +52,7 @@ class Dynamodb(utils.BaseClient):
         try:
             table = self.get_table(table_name)
 
-            item['id'] = str(key)
+            item[key_name] = str(key)
             item['type'] = item_type
             item['details'] = item_details
             now = str(utils.now_with_tz())
@@ -62,7 +63,7 @@ class Dynamodb(utils.BaseClient):
             if update_allowed:
                 result = table.put_item(Item=item)
             else:
-                result = table.put_item(Item=item, ConditionExpression='attribute_not_exists(id)')
+                result = table.put_item(Item=item, ConditionExpression=f'attribute_not_exists({key_name})')
             assert result['ResponseMetadata']['HTTPStatusCode'] == HTTPStatus.OK, f'Dynamodb call failed with response {result}'
             return result
         except ClientError as ex:
@@ -71,12 +72,12 @@ class Dynamodb(utils.BaseClient):
                 'error_code': error_code,
                 'table_name': table_name,
                 'item_type': item_type,
-                'id': str(key),
+                key_name: str(key),
                 'correlation_id': self.correlation_id
             }
             raise utils.DetailedValueError('Dynamodb raised an error', errorjson)
 
-    def update_item(self, table_name: str, key: str, name_value_pairs: dict, correlation_id=None, **kwargs):
+    def update_item(self, table_name: str, key: str, name_value_pairs: dict, key_name='id', sort_key=None, correlation_id=None, **kwargs):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.update_item
 
@@ -84,6 +85,8 @@ class Dynamodb(utils.BaseClient):
             table_name:
             key:
             name_value_pairs:
+            key_name:
+            sort_key (dict): if the table uses a sort_key, provide a dictionary specifying it (e.g. {'added_date': '2020-11-12'})
             correlation_id:
             **kwargs: use ReturnValues to get the item attributes as they appear before or after the update
 
@@ -97,7 +100,9 @@ class Dynamodb(utils.BaseClient):
             correlation_id = utils.new_correlation_id()
 
         table = self.get_table(table_name)
-        key_json = {'id': key}
+        key_json = {key_name: key}
+        if sort_key:
+            key_json.update(sort_key)
         update_expr = 'SET #modified = :m '
         values_expr = {
             ':m': name_value_pairs.pop(
@@ -119,7 +124,7 @@ class Dynamodb(utils.BaseClient):
 
             param_count += 1
 
-        self.logger.info('dynamodb update', extra={'table_name': table_name, 'key': key, 'update_expr': update_expr, 'values_expr': values_expr,
+        self.logger.info('dynamodb update', extra={'table_name': table_name, 'key': json.dumps(key_json), 'update_expr': update_expr, 'values_expr': values_expr,
                                                    'correlation_id': correlation_id})
         return table.update_item(
             Key=key_json,
