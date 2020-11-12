@@ -23,10 +23,13 @@ import thiscovery_lib.utilities as utils
 
 class CoreApiClient:
 
-    def __init__(self, correlation_id=None):
+    def __init__(self, correlation_id=None, env_overwrite=None):
         self.correlation_id = correlation_id
         self.logger = utils.get_logger()
-        env_name = utils.get_environment_name()
+        if env_overwrite:
+            env_name = env_overwrite
+        else:
+            env_name = utils.get_environment_name()
         if env_name == 'prod':
             self.base_url = 'https://api.thiscovery.org/'
         else:
