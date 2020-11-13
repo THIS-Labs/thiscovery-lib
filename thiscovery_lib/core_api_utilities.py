@@ -58,6 +58,15 @@ class CoreApiClient:
             if user_task['project_task_id'] == project_task_id:
                 return user_task['user_task_id']
 
+    def get_user_task_from_anon_user_task_id(self, anon_user_task_id):
+        result = utils.aws_get('v1/usertask', self.base_url, params={
+            'anon_user_task_id': anon_user_task_id
+        })
+        assert result['statusCode'] == HTTPStatus.OK, f'Call to core API returned error: {result}'
+        for user_task in json.loads(result['body']):
+            if user_task['anon_user_task_id'] == anon_user_task_id:
+                return user_task
+
     def set_user_task_completed(self, user_task_id):
         result = utils.aws_request('PUT', 'v1/user-task-completed', self.base_url, params={'user_task_id': user_task_id})
         assert result['statusCode'] == HTTPStatus.NO_CONTENT, f'Call to core API returned error: {result}'
