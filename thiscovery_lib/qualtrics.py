@@ -19,6 +19,8 @@ import datetime
 import requests
 import thiscovery_lib.utilities as utils
 
+from dateutil import parser
+
 
 class BaseClient:
 
@@ -178,3 +180,7 @@ class ResponsesClient(BaseClient):
         response = self.qualtrics_request("GET", endpoint_url=url)
         assert response['meta']['httpStatus'] == '200 - OK', f'Qualtrics API call failed with response: {response}'
         return response
+
+
+def qualtrics2thiscovery_timestamp(qualtrics_datetime_string):
+    return str(parser.parse(qualtrics_datetime_string))
