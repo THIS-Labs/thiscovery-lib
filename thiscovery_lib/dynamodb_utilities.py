@@ -34,7 +34,7 @@ class Dynamodb(utils.BaseClient):
         self.logger.debug('Table full name', extra={'table_full_name': table_full_name})
         return self.client.Table(table_full_name)
 
-    def put_item(self, table_name, key, item_type, item_details, item=dict(), key_name='id', update_allowed=False, correlation_id=None):
+    def put_item(self, table_name, key, item_type, item_details, item=dict(), update_allowed=False, correlation_id=None, key_name='id'):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
         Args:
@@ -77,7 +77,7 @@ class Dynamodb(utils.BaseClient):
             }
             raise utils.DetailedValueError('Dynamodb raised an error', errorjson)
 
-    def update_item(self, table_name: str, key: str, name_value_pairs: dict, key_name='id', sort_key=None, correlation_id=None, **kwargs):
+    def update_item(self, table_name: str, key: str, name_value_pairs: dict, correlation_id=None, key_name='id', sort_key=None, **kwargs):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.update_item
 
@@ -176,7 +176,7 @@ class Dynamodb(utils.BaseClient):
         response = table.query(**kwargs)
         return response.get('Items')
 
-    def get_item(self, table_name: str, key: str, key_name='id', sort_key=None, correlation_id=None):
+    def get_item(self, table_name: str, key: str, correlation_id=None, key_name='id', sort_key=None):
         """
         Args:
             table_name:
