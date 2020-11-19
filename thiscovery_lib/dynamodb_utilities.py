@@ -226,7 +226,7 @@ class Dynamodb(utils.BaseClient):
                     'id': item_id
                 })
 
-    def delete_all(self, table_name: str, table_name_verbatim=False, correlation_id=None):
+    def delete_all(self, table_name: str, table_name_verbatim=False, correlation_id=None, key_name='id', sort_key_name=None):
         if correlation_id is None:
             correlation_id = utils.new_correlation_id()
         if table_name_verbatim:
@@ -235,7 +235,12 @@ class Dynamodb(utils.BaseClient):
             table = self.get_table(table_name)
         items = self.scan(table_name, table_name_verbatim=table_name_verbatim)
         for item in items:
-            key = item['id']
-            key_json = {'id': key}
-            self.logger.info('dynamodb delete_all', extra={'table_name': table_name, 'key': key, 'correlation_id': correlation_id})
+            key = item[key_name]
+            key_json = {key_name: key}
+            if sort_key_name:
+                sort_key = item[sort_key_name]
+                key_json.update(
+                    {sort_key_name: sort_key}
+                )
+            self.logger.info('dynamodb delete_all', extra={'table_name': table_name, 'key': key_json, 'correlation_id': correlation_id})
             table.delete_item(Key=key_json)
