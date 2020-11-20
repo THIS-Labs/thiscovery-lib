@@ -79,7 +79,7 @@ class CoreApiClient:
 
         Args:
             template_name:
-            **kwargs:
+            **kwargs: Either to_recipient_id or to_recipient_email must be present
 
         Returns:
         """
