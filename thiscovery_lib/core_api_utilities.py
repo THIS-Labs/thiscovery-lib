@@ -93,3 +93,11 @@ class CoreApiClient:
         result = utils.aws_post('v1/send-transactional-email', self.base_url, request_body=json.dumps(email_dict))
         assert result['statusCode'] == HTTPStatus.NO_CONTENT, f'Call to core API returned error: {result}'
         return result
+
+    def get_project_from_project_task_id(self, project_task_id):
+        project_list = self.get_projects()
+        for project in project_list:
+            for t in project['tasks']:
+                if t['id'] == project_task_id:
+                    return project
+        raise utils.ObjectDoesNotExistError(f'Project task {project_task_id} not found', details={})
