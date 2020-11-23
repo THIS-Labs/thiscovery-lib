@@ -51,21 +51,34 @@ class CoreApiClient:
         assert result['statusCode'] == HTTPStatus.OK, f'Call to core API returned error: {result}'
         return json.loads(result['body'])
 
-    def get_user_task_id_for_project(self, user_id, project_task_id):
-        result = utils.aws_get('v1/usertask', self.base_url, params={'user_id': user_id})
+    def list_user_tasks(self, query_parameter):
+        """
+        Args:
+            query_parameter (dict): use either 'user_id' or 'anon_user_task_id' as key
+
+        Returns:
+        """
+        result = utils.aws_get('v1/usertask', self.base_url, params=query_parameter)
         assert result['statusCode'] == HTTPStatus.OK, f'Call to core API returned error: {result}'
-        for user_task in json.loads(result['body']):
+        user_task_info = json.loads(result['body'])
+        if isinstance(user_task_info, dict):
+            return [user_task_info]
+        else:  # user_task_info is list
+            return user_task_info
+
+    def get_user_task_id_for_project(self, user_id, project_task_id):
+        result = self.list_user_tasks(query_parameter={'user_id': user_id})
+        for user_task in result:
             if user_task['project_task_id'] == project_task_id:
                 return user_task['user_task_id']
 
     def get_user_task_from_anon_user_task_id(self, anon_user_task_id):
-        result = utils.aws_get('v1/usertask', self.base_url, params={
+        result = self.list_user_tasks(query_parameter={
             'anon_user_task_id': anon_user_task_id
         })
-        assert result['statusCode'] == HTTPStatus.OK, f'Call to core API returned error: {result}'
-        user_task = json.loads(result['body'])
-        if user_task['anon_user_task_id'] == anon_user_task_id:
-            return user_task
+        for user_task in result:
+            if user_task['anon_user_task_id'] == anon_user_task_id:
+                return user_task
 
     def set_user_task_completed(self, user_task_id):
         result = utils.aws_request('PUT', 'v1/user-task-completed', self.base_url, params={'user_task_id': user_task_id})
