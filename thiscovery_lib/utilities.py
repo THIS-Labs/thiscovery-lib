@@ -26,6 +26,7 @@ import re
 import requests
 import sys
 import uuid
+import traceback
 import validators
 
 from botocore.exceptions import ClientError
@@ -129,7 +130,9 @@ def error_as_response_body(error_msg, correlation_id):
 def log_exception_and_return_edited_api_response(exception, status_code, logger_instance, correlation_id):
     if isinstance(exception, DetailedValueError):
         exception.add_correlation_id(correlation_id)
-        logger_instance.error(exception)
+        logger_instance.error(exception, extra={
+            'traceback': traceback.format_exc(),
+        })
         return {
             "statusCode": status_code,
             "body": exception.as_response_body()
@@ -138,7 +141,8 @@ def log_exception_and_return_edited_api_response(exception, status_code, logger_
     else:
         error_message = exception.args[0]
         logger_instance.error(error_message, extra={
-            'correlation_id': correlation_id
+            'traceback': traceback.format_exc(),
+            'correlation_id': correlation_id,
         })
         return {
             "statusCode": status_code,
