@@ -38,6 +38,11 @@ TEST_ITEM_02 = {
     'country_code': 'GB',
 }
 
+TEST_ITEM_03 = {
+    **TEST_ITEM_01,
+    'bool_attribute': True,
+}
+
 
 def put_test_items(integer):
     """
@@ -46,7 +51,14 @@ def put_test_items(integer):
     """
     ddb = ddb_utils.Dynamodb()
     for n in range(integer):
-        ddb.put_item(TEST_TABLE_NAME, f'test{n:03}', 'test data', {'att1': f'val1.{n}', 'att2': f'val2.{n}'}, {}, True)
+        ddb.put_item(
+            table_name=TEST_TABLE_NAME,
+            key=f'test{n:03}',
+            item_type='test data',
+            item_details={'att1': f'val1.{n}', 'att2': f'val2.{n}'},
+            item={},
+            update_allowed=True
+        )
 
 
 class TestDynamoDB(test_utils.BaseTestCase):
@@ -73,6 +85,12 @@ class TestDynamoDB(test_utils.BaseTestCase):
 
     def test_02_put_and_get_ok(self):
         item = TEST_ITEM_01
+        self.ddb.put_item(TEST_TABLE_NAME, item['key'], item['item_type'], item['details'], item, False)
+        result = self.ddb.get_item(TEST_TABLE_NAME, item['key'])
+        self.common_assertions(item, result, 'created')
+
+    def test_02a_put_and_get_ok_with_bool_attribute(self):
+        item = TEST_ITEM_03
         self.ddb.put_item(TEST_TABLE_NAME, item['key'], item['item_type'], item['details'], item, False)
         result = self.ddb.get_item(TEST_TABLE_NAME, item['key'])
         self.common_assertions(item, result, 'created')
@@ -104,6 +122,15 @@ class TestDynamoDB(test_utils.BaseTestCase):
 
         self.assertEqual(1, len(items))
         self.assertEqual({'att1': 'val1.2', 'att2': 'val2.2'}, items[0]['details'])
+
+    def test_06a_scan_filter_bool(self):
+        put_test_items(4)
+        item = TEST_ITEM_03
+        self.ddb.put_item(TEST_TABLE_NAME, item['key'], item['item_type'], item['details'], item, True)
+        items = self.ddb.scan(table_name=TEST_TABLE_NAME, filter_attr_name='bool_attribute',
+                              filter_attr_values=True)
+        self.assertEqual(1, len(items))
+        self.assertEqual({'att2': 'val2', 'att1': 'val1'}, items[0]['details'])
 
     def test_07_scan_filter_string(self):
         put_test_items(4)

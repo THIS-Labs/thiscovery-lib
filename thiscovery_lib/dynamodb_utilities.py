@@ -147,7 +147,7 @@ class Dynamodb(utils.BaseClient):
             table = self.get_table(table_name)
 
         # accept string but make it into a list for later processing
-        if isinstance(filter_attr_values, str):
+        if isinstance(filter_attr_values, str) or isinstance(filter_attr_values, bool):
             filter_attr_values = [filter_attr_values]
         self.logger.info('dynamodb scan', extra={
             'table_name': table_name,
