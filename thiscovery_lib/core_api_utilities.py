@@ -51,6 +51,11 @@ class CoreApiClient:
         assert result['statusCode'] == HTTPStatus.OK, f'Call to core API returned error: {result}'
         return json.loads(result['body'])
 
+    def list_users_by_project(self, project_id):
+        result = utils.aws_get('v1/list-project-users', self.base_url, params={'project_id': project_id})
+        assert result['statusCode'] == HTTPStatus.OK, f'Call to core API returned error: {result}'
+        return json.loads(result['body'])
+
     def list_user_tasks(self, query_parameter):
         """
         Args:
