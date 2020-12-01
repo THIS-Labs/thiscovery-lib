@@ -43,11 +43,15 @@ class Lambda(utils.BaseClient):
             LogType='Tail',
             Payload=json.dumps(payload).encode('utf-8'),
         )
-        log_result_str = base64.b64decode(response['LogResult']).decode('utf-8')
-        log_result_list = log_result_str.split('\n')
-        log_result = [json.loads(x.split(';1m')[1]) for x in log_result_list if ';1m' in x]
+        try:
+            log_result_str = base64.b64decode(response['LogResult']).decode('utf-8')
+        except KeyError:
+            response['LogResult'] = 'None'
+        else:
+            log_result_list = log_result_str.split('\n')
+            log_result = [json.loads(x.split(';1m')[1]) for x in log_result_list if ';1m' in x]
+            response['LogResult'] = log_result
         response['Payload'] = json.loads(response['Payload'].read().decode('utf-8'))
-        response['LogResult'] = log_result
         return response
 
     def list_functions(self):
