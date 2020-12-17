@@ -24,8 +24,8 @@ from dateutil import parser
 
 class BaseClient:
 
-    def __init__(self, api_token=None, correlation_id=None):
-        self.base_url = 'https://cambridge.eu.qualtrics.com/API'
+    def __init__(self, qualtrics_account_name, api_token=None, correlation_id=None):
+        self.base_url = f'https://{qualtrics_account_name}.eu.qualtrics.com/API'
         if api_token is None:
             self.api_token = utils.get_secret('qualtrics-connection')['api-key']
         else:
@@ -61,8 +61,14 @@ class BaseClient:
 
 class SurveyDefinitionsClient(BaseClient):
 
-    def __init__(self, survey_id=None, correlation_id=None):
-        super().__init__(correlation_id=correlation_id)
+    def __init__(self, qualtrics_account_name='cambridge', survey_id=None, correlation_id=None):
+        """
+        Args:
+            qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
+            survey_id:
+            correlation_id:
+        """
+        super().__init__(qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id)
         self.base_endpoint = f"{self.base_url}/v3/survey-definitions"
         self.survey_endpoint = f"{self.base_endpoint}/{survey_id}"
         self.questions_endpoint = f"{self.survey_endpoint}/questions"
@@ -114,8 +120,13 @@ class SurveyDefinitionsClient(BaseClient):
 
 
 class DistributionsClient(BaseClient):
-    def __init__(self, correlation_id=None):
-        super().__init__(correlation_id=correlation_id)
+    def __init__(self, qualtrics_account_name='cambridge', correlation_id=None):
+        """
+        Args:
+            qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
+            correlation_id:
+        """
+        super().__init__(qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id)
         self.base_endpoint = f"{self.base_url}/v3/distributions"
 
     def _create_distribution(self, data):
@@ -159,8 +170,14 @@ class DistributionsClient(BaseClient):
 
 
 class ResponsesClient(BaseClient):
-    def __init__(self, survey_id, correlation_id=None):
-        super().__init__(correlation_id=correlation_id)
+    def __init__(self, survey_id, qualtrics_account_name='cambridge', correlation_id=None):
+        """
+        Args:
+            survey_id:
+            qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
+            correlation_id:
+        """
+        super().__init__(qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id)
         self.base_endpoint = f"{self.base_url}/v3/surveys/{survey_id}"
 
     def retrieve_survey_response_schema(self):
