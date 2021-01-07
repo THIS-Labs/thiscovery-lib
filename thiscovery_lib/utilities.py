@@ -96,6 +96,10 @@ class DetailedValueError(ValueError):
         self.details['correlation_id'] = str(correlation_id)
 
 
+class DeliberateError(DetailedValueError):
+    pass
+
+
 class ObjectDoesNotExistError(DetailedValueError):
     pass
 
@@ -762,6 +766,8 @@ def api_error_handler(func):
             return log_exception_and_return_edited_api_response(err, HTTPStatus.NOT_FOUND, logger, correlation_id)
         except (PatchAttributeNotRecognisedError, PatchOperationNotSupportedError, PatchInvalidJsonError, DetailedIntegrityError, DetailedValueError) as err:
             return log_exception_and_return_edited_api_response(err, HTTPStatus.BAD_REQUEST, logger, correlation_id)
+        except DeliberateError as err:
+            return log_exception_and_return_edited_api_response(err, HTTPStatus.IM_A_TEAPOT, logger, correlation_id)
         except Exception as err:
             return log_exception_and_return_edited_api_response(err, HTTPStatus.INTERNAL_SERVER_ERROR, logger, correlation_id)
 
