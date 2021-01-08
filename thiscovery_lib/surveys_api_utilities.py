@@ -21,7 +21,7 @@ from http import HTTPStatus
 import thiscovery_lib.utilities as utils
 
 
-class InterviewsApiClient:
+class SurveysApiClient:
 
     def __init__(self, env_override=None, correlation_id=None):
         self.correlation_id = correlation_id
@@ -31,22 +31,18 @@ class InterviewsApiClient:
         else:
             env_name = utils.get_environment_name()
         if env_name == 'prod':
-            self.base_url = 'https://interviews-api.thiscovery.org/'
+            self.base_url = 'https://surveys-api.thiscovery.org/'
         else:
-            self.base_url = f'https://{env_name}-interviews-api.thiscovery.org/'
+            self.base_url = f'https://{env_name}-surveys-api.thiscovery.org/'
 
-    def set_interview_url(self, appointment_id, interview_url, event_type, **kwargs):
+    def put_response(self, **kwargs):
         body = {
-            'appointment_id': appointment_id,
-            'interview_url': interview_url,
-            'event_type': event_type,
-            'correlation_id': self.correlation_id,
             **kwargs,
         }
-        self.logger.debug("Calling interviews API set-interview-url endpoint", extra={'body': body})
+        self.logger.debug("Calling surveys API put_response_api endpoint", extra={'body': body})
         result = utils.aws_request(
             method='PUT',
-            endpoint_url='v1/set-interview-url',
+            endpoint_url='v1/response',
             base_url=self.base_url,
             data=json.dumps(body),
         )
