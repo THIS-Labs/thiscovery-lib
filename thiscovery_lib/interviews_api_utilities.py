@@ -35,12 +35,13 @@ class InterviewsApiClient:
         else:
             self.base_url = f'https://{env_name}-interviews-api.thiscovery.org/'
 
-    def set_interview_url(self, appointment_id, interview_url, event_type):
+    def set_interview_url(self, appointment_id, interview_url, event_type, **kwargs):
         body = {
             'appointment_id': appointment_id,
             'interview_url': interview_url,
             'event_type': event_type,
             'correlation_id': self.correlation_id,
+            **kwargs,
         }
         self.logger.debug("Calling interviews API set-interview-url endpoint", extra={'body': body})
         result = utils.aws_request(
