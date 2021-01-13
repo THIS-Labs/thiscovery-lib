@@ -35,6 +35,28 @@ class InterviewsApiClient:
         else:
             self.base_url = f'https://{env_name}-interviews-api.thiscovery.org/'
 
+    def get_appointments_by_type_ids(self, appointment_type_ids):
+        """
+        Args:
+            appointment_type_ids (list):
+
+        Returns:
+        """
+        body = {
+            'type_ids': appointment_type_ids,
+        }
+        self.logger.debug("Calling interviews API appointments-by-type endpoint", extra={
+            'body': body
+        })
+        result = utils.aws_request(
+            method='GET',
+            endpoint_url='/v1/appointments-by-type',
+            base_url=self.base_url,
+            data=json.dumps(body),
+        )
+        assert result['statusCode'] == HTTPStatus.OK, f'Call to interviews API returned error: {result}'
+        return result
+
     def set_interview_url(self, appointment_id, interview_url, event_type, **kwargs):
         body = {
             'appointment_id': appointment_id,
