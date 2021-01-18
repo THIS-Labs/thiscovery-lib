@@ -50,7 +50,7 @@ class InterviewsApiClient:
         })
         result = utils.aws_request(
             method='GET',
-            endpoint_url='/v1/appointments-by-type',
+            endpoint_url='v1/appointments-by-type',
             base_url=self.base_url,
             data=json.dumps(body),
         )
