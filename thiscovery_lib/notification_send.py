@@ -15,134 +15,36 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
-from enum import Enum
+import uuid
 
-from thiscovery_lib import dynamodb_utilities as ddb_utils
-import thiscovery_lib.utilities as utils
-
-
-NOTIFICATION_TABLE_NAME = 'notifications'
-MAX_RETRIES = 2
+from thiscovery_lib.notifications import NotificationStatus, NotificationType, save_notification, create_notification
 
 
-class NotificationType(Enum):
-    USER_REGISTRATION = 'user-registration'
-    TASK_SIGNUP = 'task-signup'
-    USER_LOGIN = 'user-login'
-    TRANSACTIONAL_EMAIL = 'transactional-email'
+def notify_new_user_registration(new_user, correlation_id):
+    notification_item = create_notification(new_user['email'])
+    key = new_user['id']
+    save_notification(key, NotificationType.USER_REGISTRATION.value, new_user, notification_item, correlation_id)
 
 
-class NotificationStatus(Enum):
-    NEW = 'new'
-    PROCESSED = 'processed'
-    RETRYING = 'retrying'
-    DLQ = 'dlq'
+def notify_new_task_signup(task_signup, correlation_id):
+    notification_item = create_notification(task_signup['user_id'])
+    # use existing user_task id as notification id
+    key = task_signup['id']
+    save_notification(key, NotificationType.TASK_SIGNUP.value, task_signup, notification_item, correlation_id)
 
 
-class NotificationAttributes(Enum):
-    STATUS = 'processing_status'
-    FAIL_COUNT = 'processing_fail_count'
-    ERROR_MESSAGE = 'processing_error_message'
-    TYPE = 'type'
+def notify_user_login(login_info, correlation_id):
+    assert 'login_datetime' in login_info.keys(), f"login_datetime not present in notification body ({login_info})"
+    notification_item = create_notification(login_info['email'])
+    key = str(uuid.uuid4())
+    save_notification(key, NotificationType.USER_LOGIN.value, login_info, notification_item, correlation_id)
 
 
-def get_notifications_to_process(correlation_id=None):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
-    notifications_to_process = list()
-    for status in [NotificationStatus.NEW.value, NotificationStatus.RETRYING.value]:
-        notifications_to_process += ddb.query(
-            table_name=NOTIFICATION_TABLE_NAME,
-            IndexName="processing-status-index",
-            KeyConditionExpression='processing_status = :status',
-            ExpressionAttributeValues={
-                ':status': status,
-            }
-        )
-    return notifications_to_process
-
-
-def get_notifications_to_clear(datetime_threshold, correlation_id=None):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
-    return ddb.query(
-            table_name=NOTIFICATION_TABLE_NAME,
-            IndexName="processing-status-index",
-            KeyConditionExpression='processing_status = :status '
-                                   'AND created < :t1',
-            ExpressionAttributeValues={
-                ':status': NotificationStatus.PROCESSED.value,
-                ':t1': str(datetime_threshold),
-            },
-            ScanIndexForward=False,
-        )
-
-
-def get_notifications(filter_attr_name: str = None, filter_attr_values=None, correlation_id=None):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
-    notifications = ddb.scan(NOTIFICATION_TABLE_NAME, filter_attr_name, filter_attr_values)
-    return notifications
-
-
-def delete_all_notifications():
-    ddb = ddb_utils.Dynamodb()
-    ddb.delete_all(NOTIFICATION_TABLE_NAME)
-
-
-def create_notification(label: str):
-    notification_item = {
-        NotificationAttributes.STATUS.value: NotificationStatus.NEW.value,
-        'label': label
-    }
-    return notification_item
-
-
-def save_notification(key, task_type, task_signup, notification_item, correlation_id):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
-    ddb.put_item(NOTIFICATION_TABLE_NAME, key, task_type, task_signup, notification_item, False, correlation_id)
-
-
-def get_fail_count(notification):
-    if NotificationAttributes.FAIL_COUNT.value in notification:
-        return int(notification[NotificationAttributes.FAIL_COUNT.value])
-    else:
-        return 0
-
-
-def set_fail_count(notification, new_value):
-    notification[NotificationAttributes.FAIL_COUNT.value] = new_value
-
-
-def mark_notification_processed(notification, correlation_id):
-    notification_id = notification['id']
-    notification_updates = {
-        NotificationAttributes.STATUS.value: NotificationStatus.PROCESSED.value
-    }
-    ddb = ddb_utils.Dynamodb()
-    return ddb.update_item(NOTIFICATION_TABLE_NAME, notification_id, notification_updates, correlation_id)
-
-
-def mark_notification_failure(notification, error_message, correlation_id):
-
-    def update_notification_item(status_, fail_count_, error_message_=error_message):
-        notification_updates = {
-            NotificationAttributes.STATUS.value: status_,
-            NotificationAttributes.FAIL_COUNT.value: fail_count_,
-            NotificationAttributes.ERROR_MESSAGE.value: error_message_
-        }
-        ddb = ddb_utils.Dynamodb()
-        return ddb.update_item(NOTIFICATION_TABLE_NAME, notification_id, notification_updates, correlation_id)
-
-    logger = utils.get_logger()
-    logger.debug(f'Error processing notification', extra={'error_message': error_message, 'notification': notification, 'correlation_id': correlation_id})
-    notification_id = notification['id']
-    fail_count = get_fail_count(notification) + 1
-    set_fail_count(notification, fail_count)
-    if fail_count > MAX_RETRIES:
-        logger.error(f'Failed to process notification after {MAX_RETRIES} attempts', extra={'error_message': error_message, 'notification': notification,
-                                                                                            'correlation_id': correlation_id})
-        status = NotificationStatus.DLQ.value
-        update_notification_item(status, fail_count)
-        errorjson = {'fail_count': fail_count, **notification}
-        raise utils.DetailedValueError(f'Notification processing failed', errorjson)
-    else:
-        status = NotificationStatus.RETRYING.value
-        return update_notification_item(status, fail_count)
+def new_transactional_email_notification(email_dict, correlation_id=None):
+    try:
+        user_label = email_dict['to_recipient_id']
+    except KeyError:
+        user_label = email_dict.get('to_recipient_email')
+    notification_item = create_notification(f"{email_dict['template_name']}_{user_label}")
+    key = str(uuid.uuid4())
+    save_notification(key, NotificationType.TRANSACTIONAL_EMAIL.value, email_dict, notification_item, correlation_id)
