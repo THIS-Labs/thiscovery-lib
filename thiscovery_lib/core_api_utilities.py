@@ -35,11 +35,15 @@ class CoreApiClient:
         else:
             self.base_url = f'https://{env_name}-api.thiscovery.org/'
 
-    def get_user_id_by_email(self, email):
+    def get_user_by_email(self, email):
         # todo: similar code is used in stack s3-to-sdhs; adapt that stack to use this client
         result = utils.aws_get('v1/user', self.base_url, params={'email': email})
         assert result['statusCode'] == HTTPStatus.OK, f'Call to core API returned error: {result}'
-        return json.loads(result['body'])['id']
+        return json.loads(result['body'])
+
+    def get_user_id_by_email(self, email):
+        user = self.get_user_by_email(email=email)
+        return user['id']
 
     def get_projects(self):
         result = utils.aws_get('v1/project', self.base_url, params={})
