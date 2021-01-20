@@ -76,8 +76,8 @@ def get_notifications_to_clear(datetime_threshold, correlation_id=None):
         )
 
 
-def get_notifications(filter_attr_name: str = None, filter_attr_values=None, correlation_id=None):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
+def get_notifications(filter_attr_name: str = None, filter_attr_values=None, correlation_id=None, stack_name='thiscovery-core'):
+    ddb = ddb_utils.Dynamodb(stack_name=stack_name, correlation_id=correlation_id)
     notifications = ddb.scan(NOTIFICATION_TABLE_NAME, filter_attr_name, filter_attr_values)
     return notifications
 
