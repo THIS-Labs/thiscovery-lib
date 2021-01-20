@@ -33,11 +33,18 @@ def notify_new_task_signup(task_signup, correlation_id):
     save_notification(key, NotificationType.TASK_SIGNUP.value, task_signup, notification_item, correlation_id)
 
 
-def notify_user_login(login_info, correlation_id):
+def notify_user_login(login_info, correlation_id, stack_name='thiscovery-core'):
     assert 'login_datetime' in login_info.keys(), f"login_datetime not present in notification body ({login_info})"
     notification_item = create_notification(login_info['email'])
     key = str(uuid.uuid4())
-    save_notification(key, NotificationType.USER_LOGIN.value, login_info, notification_item, correlation_id)
+    save_notification(
+        key,
+        NotificationType.USER_LOGIN.value,
+        login_info,
+        notification_item,
+        correlation_id,
+        stack_name=stack_name,
+    )
 
 
 def new_transactional_email_notification(email_dict, correlation_id=None):

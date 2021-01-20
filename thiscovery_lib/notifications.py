@@ -95,8 +95,11 @@ def create_notification(label: str):
     return notification_item
 
 
-def save_notification(key, task_type, task_signup, notification_item, correlation_id):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
+def save_notification(key, task_type, task_signup, notification_item, correlation_id, stack_name='thiscovery-core'):
+    ddb = ddb_utils.Dynamodb(
+        stack_name=stack_name,
+        correlation_id=correlation_id,
+    )
     ddb.put_item(NOTIFICATION_TABLE_NAME, key, task_type, task_signup, notification_item, False, correlation_id)
 
 
