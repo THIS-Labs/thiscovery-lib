@@ -82,8 +82,8 @@ def get_notifications(filter_attr_name: str = None, filter_attr_values=None, cor
     return notifications
 
 
-def delete_all_notifications():
-    ddb = ddb_utils.Dynamodb()
+def delete_all_notifications(stack_name='thiscovery-core'):
+    ddb = ddb_utils.Dynamodb(stack_name=stack_name)
     ddb.delete_all(NOTIFICATION_TABLE_NAME)
 
 
