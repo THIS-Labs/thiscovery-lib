@@ -77,11 +77,11 @@ class HubSpotClient:
     client_id_secret_name = 'client-id'
     client_secret_name = 'client-secret'
 
-    def __init__(self, mock_server=False, correlation_id=None):
+    def __init__(self, mock_server=False, correlation_id=None, stack_name='thiscovery-core'):
         self.mock_server = mock_server
         self.logger = get_logger()
         self.correlation_id = correlation_id
-        self.ddb = ddb_utils.Dynamodb()
+        self.ddb = ddb_utils.Dynamodb(stack_name=stack_name)
         self.tokens = self.get_token_from_database()
 
         if not self.tokens:
