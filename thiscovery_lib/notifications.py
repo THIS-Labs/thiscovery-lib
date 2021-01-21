@@ -117,16 +117,16 @@ def set_fail_count(notification, new_value):
     notification[NotificationAttributes.FAIL_COUNT.value] = new_value
 
 
-def mark_notification_processed(notification, correlation_id):
+def mark_notification_processed(notification, correlation_id, stack_name='thiscovery-core'):
     notification_id = notification['id']
     notification_updates = {
         NotificationAttributes.STATUS.value: NotificationStatus.PROCESSED.value
     }
-    ddb = ddb_utils.Dynamodb()
+    ddb = ddb_utils.Dynamodb(stack_name=stack_name)
     return ddb.update_item(NOTIFICATION_TABLE_NAME, notification_id, notification_updates, correlation_id)
 
 
-def mark_notification_failure(notification, error_message, correlation_id):
+def mark_notification_failure(notification, error_message, correlation_id, stack_name='thiscovery-core'):
 
     def update_notification_item(status_, fail_count_, error_message_=error_message):
         notification_updates = {
@@ -134,7 +134,7 @@ def mark_notification_failure(notification, error_message, correlation_id):
             NotificationAttributes.FAIL_COUNT.value: fail_count_,
             NotificationAttributes.ERROR_MESSAGE.value: error_message_
         }
-        ddb = ddb_utils.Dynamodb()
+        ddb = ddb_utils.Dynamodb(stack_name=stack_name)
         return ddb.update_item(NOTIFICATION_TABLE_NAME, notification_id, notification_updates, correlation_id)
 
     logger = utils.get_logger()
