@@ -14,6 +14,7 @@ setuptools.setup(
         'botocore',
         'python-dateutil',
         'epsagon',
+        'jsons',
         'python-json-logger',
         'requests',
         'validators',
