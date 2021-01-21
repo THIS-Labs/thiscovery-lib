@@ -46,8 +46,11 @@ class NotificationAttributes(Enum):
     TYPE = 'type'
 
 
-def get_notifications_to_process(correlation_id=None):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
+def get_notifications_to_process(correlation_id=None, stack_name='thiscovery-core'):
+    ddb = ddb_utils.Dynamodb(
+        stack_name=stack_name,
+        correlation_id=correlation_id,
+    )
     notifications_to_process = list()
     for status in [NotificationStatus.NEW.value, NotificationStatus.RETRYING.value]:
         notifications_to_process += ddb.query(
