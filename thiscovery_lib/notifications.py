@@ -64,8 +64,8 @@ def get_notifications_to_process(correlation_id=None, stack_name='thiscovery-cor
     return notifications_to_process
 
 
-def get_notifications_to_clear(datetime_threshold, correlation_id=None):
-    ddb = ddb_utils.Dynamodb(correlation_id=correlation_id)
+def get_notifications_to_clear(datetime_threshold, correlation_id=None, stack_name='thiscovery-core'):
+    ddb = ddb_utils.Dynamodb(stack_name=stack_name, correlation_id=correlation_id)
     return ddb.query(
             table_name=NOTIFICATION_TABLE_NAME,
             IndexName="processing-status-index",
