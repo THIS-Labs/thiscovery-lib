@@ -18,23 +18,20 @@
 import json
 from http import HTTPStatus
 
+import thiscovery_lib.thiscovery_api_utilities as tau
 import thiscovery_lib.utilities as utils
 
 
-class InterviewsApiClient:
+class InterviewsApiClient(tau.ThiscoveryApiClient):
 
     def __init__(self, env_override=None, correlation_id=None):
-        self.correlation_id = correlation_id
-        self.logger = utils.get_logger()
-        if env_override:
-            env_name = env_override
-        else:
-            env_name = utils.get_environment_name()
-        if env_name == 'prod':
-            self.base_url = 'https://interviews-api.thiscovery.org/'
-        else:
-            self.base_url = f'https://{env_name}-interviews-api.thiscovery.org/'
+        super(InterviewsApiClient, self).__init__(
+            correlation_id=correlation_id,
+            env_override=env_override,
+            api_prefix='interviews',
+        )
 
+    @tau.check_response(HTTPStatus.OK)
     def get_appointments_by_type_ids(self, appointment_type_ids):
         """
         Args:
@@ -48,15 +45,14 @@ class InterviewsApiClient:
         self.logger.debug("Calling interviews API appointments-by-type endpoint", extra={
             'body': body
         })
-        result = utils.aws_request(
+        return utils.aws_request(
             method='GET',
             endpoint_url='v1/appointments-by-type',
             base_url=self.base_url,
             data=json.dumps(body),
         )
-        assert result['statusCode'] == HTTPStatus.OK, f'Call to interviews API returned error: {result}'
-        return result
 
+    @tau.check_response(HTTPStatus.OK)
     def set_interview_url(self, appointment_id, interview_url, event_type, **kwargs):
         body = {
             'appointment_id': appointment_id,
@@ -66,11 +62,9 @@ class InterviewsApiClient:
             **kwargs,
         }
         self.logger.debug("Calling interviews API set-interview-url endpoint", extra={'body': body})
-        result = utils.aws_request(
+        return utils.aws_request(
             method='PUT',
             endpoint_url='v1/set-interview-url',
             base_url=self.base_url,
             data=json.dumps(body),
         )
-        assert result['statusCode'] == HTTPStatus.OK, f'Call to interviews API returned error: {result}'
-        return result
