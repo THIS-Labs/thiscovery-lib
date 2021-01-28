@@ -55,17 +55,14 @@ class ThiscoveryEvent(EntityBase):
         """
 
         Args:
-            event (dict): must contain detail_type, user_id and detail (a json-serializable version of event details). It can optionally contain:
+            event (dict): must contain detail_type and detail (a json-serializable version of event details). It can optionally contain:
                             event_time (string in iso format) - if this is omitted creation time of entity will be used
                             id - uuid for event - if this is omitted it will be created
                             user_email - no action if this is omitted
                             further eventtype-specific details
         """
-        # self.logger = utils.get_logger()
-
-        if 'user_id' not in event or 'detail_type' not in event:
-            # raise error
-            raise utils.DetailedValueError('mandatory event data not provided','')
+        if 'detail_type' not in event:
+            raise utils.DetailedValueError('mandatory detail_type data not provided', dict())
 
         # todo - validate type
 
