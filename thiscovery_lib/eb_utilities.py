@@ -76,12 +76,6 @@ class ThiscoveryEvent(EntityBase):
         else:
             self.event_time = utils.now_with_tz().isoformat()
 
-        if 'user_email' in event:
-            self.user_email = event['user_email']
-        else:
-            self.user_email = ''
-
-        self.user_id = event['user_id']
         self.detail_type = event['detail_type']
         self.detail = json.dumps(event)
 
