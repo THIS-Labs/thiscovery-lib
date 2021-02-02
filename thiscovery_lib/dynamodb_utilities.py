@@ -34,7 +34,7 @@ class Dynamodb(utils.BaseClient):
         self.logger.debug('Table full name', extra={'table_full_name': table_full_name})
         return self.client.Table(table_full_name)
 
-    def put_item(self, table_name, key, item_type, item_details, item=dict(), update_allowed=False, correlation_id=None, key_name='id'):
+    def put_item(self, table_name, key, item_type, item_details, item=dict(), update_allowed=False, correlation_id=None, key_name='id', sort_key=None):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
         Args:
@@ -44,6 +44,7 @@ class Dynamodb(utils.BaseClient):
             item_details:
             item:
             key_name:
+            sort_key (dict): if the table uses a sort_key, provide a dictionary specifying it (e.g. {'added_date': '2020-11-12'})
             update_allowed:
             correlation_id:
 
@@ -58,12 +59,15 @@ class Dynamodb(utils.BaseClient):
             now = str(utils.now_with_tz())
             item['created'] = now
             item['modified'] = now
+            if sort_key:
+                item.update(sort_key)
 
             self.logger.info('dynamodb put', extra={'table_name': table_name, 'item': item, 'correlation_id': self.correlation_id})
             if update_allowed:
                 result = table.put_item(Item=item)
             else:
-                result = table.put_item(Item=item, ConditionExpression=f'attribute_not_exists({key_name})')
+                condition_expression = f'attribute_not_exists({key_name})'  # no need to worry about sort_key here: https://stackoverflow.com/a/32833726
+                result = table.put_item(Item=item, ConditionExpression=condition_expression)
             assert result['ResponseMetadata']['HTTPStatusCode'] == HTTPStatus.OK, f'Dynamodb call failed with response {result}'
             return result
         except ClientError as ex:
