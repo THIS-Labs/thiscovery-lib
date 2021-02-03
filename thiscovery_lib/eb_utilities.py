@@ -19,7 +19,6 @@ import json
 import uuid
 
 import thiscovery_lib.utilities as utils
-from thiscovery_lib.entity_base import EntityBase
 
 
 class EventbridgeClient(utils.BaseClient):
@@ -38,7 +37,6 @@ class EventbridgeClient(utils.BaseClient):
 
         Returns:
         """
-        event_json = thiscovery_event.to_json()
         entries = [
             {
                 'Source': event_source,
@@ -52,19 +50,21 @@ class EventbridgeClient(utils.BaseClient):
         return self.client.put_events(Entries=entries)
 
 
-class ThiscoveryEvent(EntityBase):
+class ThiscoveryEvent:
     def __init__(self, event):
         """
 
         Args:
-            event (dict): must contain detail_type and detail (a json-serializable version of event details). It can optionally contain:
+            event (dict): must contain detail-type and detail (a json-serializable version of event details). It can optionally contain:
                             event_time (string in iso format) - if this is omitted creation time of entity will be used
                             id - uuid for event - if this is omitted it will be created
                             user_email - no action if this is omitted
                             further eventtype-specific details
         """
-        if 'detail_type' not in event:
-            raise utils.DetailedValueError('mandatory detail_type data not provided', dict())
+        if 'detail-type' not in event:
+            raise utils.DetailedValueError('mandatory detail-type data not provided', dict())
+        if 'detail' not in event:
+            raise utils.DetailedValueError('mandatory detail data not provided', dict())
 
         # todo - validate type
 
@@ -78,8 +78,8 @@ class ThiscoveryEvent(EntityBase):
         else:
             self.event_time = utils.now_with_tz().isoformat()
 
-        self.detail_type = event['detail_type']
-        self.detail = json.dumps(event)
+        self.detail_type = event['detail-type']
+        self.detail = json.dumps(event['detail'])
 
     def put_event(self):
         ebc = EventbridgeClient()
