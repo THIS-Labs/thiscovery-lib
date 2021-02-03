@@ -29,6 +29,8 @@ class EventbridgeClient(utils.BaseClient):
 
     def put_event(self, thiscovery_event, event_source='thiscovery', event_bus_name='thiscovery-event-bus'):
         """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/events.html#EventBridge.Client.put_events
+
         Args:
             thiscovery_event (ThiscoveryEvent): instance of ThiscoveryEvent
             event_source:
