@@ -26,20 +26,19 @@ class EventbridgeClient(utils.BaseClient):
     def __init__(self, profile_name=None):
         super().__init__('events', profile_name=profile_name)
 
-    def put_event(self, thiscovery_event, event_source='thiscovery', event_bus_name='thiscovery-event-bus'):
+    def put_event(self, thiscovery_event, event_bus_name='thiscovery-event-bus'):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/events.html#EventBridge.Client.put_events
 
         Args:
             thiscovery_event (ThiscoveryEvent): instance of ThiscoveryEvent
-            event_source:
             event_bus_name:
 
         Returns:
         """
         entries = [
             {
-                'Source': event_source,
+                'Source': thiscovery_event.event_source,
                 'Resources': [],
                 'Time': thiscovery_event.event_time,
                 'DetailType': thiscovery_event.detail_type,
@@ -61,25 +60,21 @@ class ThiscoveryEvent:
                             user_email - no action if this is omitted
                             further eventtype-specific details
         """
-        if 'detail-type' not in event:
+        try:
+            self.detail_type = event['detail-type']
+        except KeyError:
             raise utils.DetailedValueError('mandatory detail-type data not provided', dict())
-        if 'detail' not in event:
+
+        try:
+            detail = event['detail']
+        except KeyError:
             raise utils.DetailedValueError('mandatory detail data not provided', dict())
 
+        self.detail = json.dumps(detail)
         # todo - validate type
-
-        if 'id' in event:
-            self.id = event['id']
-        else:
-            self.id = str(uuid.uuid4())
-
-        if 'event_time' in event:
-            self.event_time = event['event_time']
-        else:
-            self.event_time = utils.now_with_tz().isoformat()
-
-        self.detail_type = event['detail-type']
-        self.detail = json.dumps(event['detail'])
+        self.event_source = event.get('event_source', 'thiscovery')
+        self.id = event.get('id', str(uuid.uuid4()))
+        self.event_time = event.get('event_time', utils.now_with_tz().isoformat())
 
     def put_event(self):
         ebc = EventbridgeClient()
