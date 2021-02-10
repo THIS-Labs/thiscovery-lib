@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="thiscovery-lib",  # Replace with your own username
-    version="2021.2.2.1",
+    version="2021.2.3",
     author="Thiscovery team",
     author_email="support@thiscovery.org",
     description="Thiscovery library",
