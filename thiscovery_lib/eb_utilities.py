@@ -56,9 +56,6 @@ class ThiscoveryEvent:
         Args:
             event (dict): must contain detail-type and detail (a json-serializable version of event details). It can optionally contain:
                             event_time (string in iso format) - if this is omitted creation time of entity will be used
-                            id - uuid for event - if this is omitted it will be created
-                            user_email - no action if this is omitted
-                            further eventtype-specific details
         """
         try:
             self.detail_type = event['detail-type']
@@ -73,7 +70,6 @@ class ThiscoveryEvent:
         self.detail = json.dumps(detail)
         # todo - validate type
         self.event_source = event.get('event_source', 'thiscovery')
-        self.id = event.get('id', str(uuid.uuid4()))
         self.event_time = event.get('event_time', utils.now_with_tz().isoformat())
 
     def put_event(self):
