@@ -43,3 +43,9 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             self.core_client.get_user_by_email(
                 email='non_existent@email.co.uk'
             )
+
+    def test_get_user_task_from_anon_user_task_id_ok(self):
+        result = self.core_client.get_user_task_from_anon_user_task_id(
+            anon_user_task_id='3dce6e9c-9b20-4d7f-a266-9967553dbc16'
+        )
+        self.assertEqual('273b420e-09cb-419c-8b57-b393595dba78', result['project_task_id'])
