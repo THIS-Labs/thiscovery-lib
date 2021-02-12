@@ -169,7 +169,8 @@ class Dynamodb(utils.BaseClient):
         self.logger.info('dynamodb scan result', extra={'count': str(len(items)), 'correlation_id': self.correlation_id})
         return items
 
-    def query(self, table_name, table_name_verbatim=False, **kwargs):
+    def query(self, table_name, table_name_verbatim=False,
+              filter_attr_name=None, filter_attr_values=None, **kwargs):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.query
         """
@@ -177,7 +178,16 @@ class Dynamodb(utils.BaseClient):
             table = self.client.Table(table_name)
         else:
             table = self.get_table(table_name)
-        response = table.query(**kwargs)
+        if isinstance(filter_attr_values, str) or isinstance(filter_attr_values, bool):
+            filter_attr_values = [filter_attr_values]
+
+        if filter_attr_name is None:
+            response = table.query(**kwargs)
+        else:
+            filter_expr = Attr(filter_attr_name).eq(filter_attr_values[0])
+            for value in filter_attr_values[1:]:
+                filter_expr = filter_expr | Attr(filter_attr_name).eq(value)
+            response = table.query(FilterExpression=filter_expr, **kwargs)
         return response.get('Items')
 
     def get_item(self, table_name: str, key: str, correlation_id=None, key_name='id', sort_key=None):
