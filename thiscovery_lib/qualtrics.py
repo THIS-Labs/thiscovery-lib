@@ -27,7 +27,7 @@ class BaseClient:
     def __init__(self, qualtrics_account_name, api_token=None, correlation_id=None):
         self.base_url = f'https://{qualtrics_account_name}.eu.qualtrics.com/API'
         if api_token is None:
-            self.api_token = utils.get_secret('qualtrics-connection')['api-key']
+            self.api_token = utils.get_secret('qualtrics-connection')[qualtrics_account_name]
         else:
             self.api_token = api_token
         self.logger = utils.get_logger()
