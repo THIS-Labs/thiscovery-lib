@@ -216,12 +216,14 @@ class Dynamodb(utils.BaseClient):
             # not found
             return None
 
-    def delete_item(self, table_name: str, key: str, correlation_id=None):
+    def delete_item(self, table_name: str, key: str, correlation_id=None, key_name='id', sort_key=None):
         if correlation_id is None:
             correlation_id = utils.new_correlation_id()
         table = self.get_table(table_name)
-        key_json = {'id': key}
-        self.logger.info('dynamodb delete', extra={'table_name': table_name, 'key': key, 'correlation_id': correlation_id})
+        key_json = {key_name: key}
+        if sort_key:
+            key_json.update(sort_key)
+        self.logger.info('dynamodb delete', extra={'table_name': table_name, 'key': json.dumps(key_json), 'correlation_id': correlation_id})
         return table.delete_item(Key=key_json)
 
     def batch_delete_items(self, table_name, keys):
