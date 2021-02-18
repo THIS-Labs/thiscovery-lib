@@ -41,8 +41,5 @@ class SnsClient(utils.BaseClient):
 
     @staticmethod
     def dict_to_plaintext_list(input_dict):
-        indent = "    "
-        begin_list = indent
-        end_list = "\n"
-        list_items = f'\n{indent}'.join([f"<li>{k}: {v}</li>" for k, v in input_dict.items()])
-        return f"{begin_list}\n{list_items}\n{end_list}"
+        list_items = f'\n'.join([f"    - {k}: {v}" for k, v in input_dict.items()])
+        return f"{list_items}\n"
