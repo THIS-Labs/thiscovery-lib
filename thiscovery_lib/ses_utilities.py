@@ -95,5 +95,5 @@ class SesClient(utils.BaseClient):
     def dict_to_html_ul(input_dict):
         begin_list = "<ul>"
         end_list = "</ul>"
-        list_items = '\n'.join([f"<li>{k}: {v}</li>" for k, v in input_dict.items()])
+        list_items = '\n'.join([f"    <li>{k}: {v}</li>" for k, v in input_dict.items()])
         return f"{begin_list}\n{list_items}\n{end_list}"
