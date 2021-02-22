@@ -89,7 +89,7 @@ class CoreApiClient(tau.ThiscoveryApiClient):
                 'anon_user_task_id': anon_user_task_id
             })
 
-    @tau.check_response(HTTPStatus.NO_CONTENT)
+    @tau.check_response(HTTPStatus.NO_CONTENT, HTTPStatus.METHOD_NOT_ALLOWED)
     def send_transactional_email(self, template_name, **kwargs):
         """
         Calls the send-transactional-email endpoint. Appends 'NA_' to template_name
