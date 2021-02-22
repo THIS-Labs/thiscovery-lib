@@ -31,7 +31,7 @@ class SurveysApiClient(tau.ThiscoveryApiClient):
             api_prefix='surveys'
         )
 
-    @tau.check_response(HTTPStatus.OK)
+    @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
     def put_response(self, **kwargs):
         body = {
             **kwargs,

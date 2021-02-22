@@ -18,6 +18,7 @@
 import json
 from http import HTTPStatus
 
+import thiscovery_lib.thiscovery_api_utilities as tau
 import thiscovery_lib.utilities as utils
 
 
@@ -27,6 +28,7 @@ class EmailsApiClient:
         self.correlation_id = correlation_id
         self.base_url = 'https://email-api.thiscovery.org/'
 
+    @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
     def send_email(self, email_dict):
         """
         Args:
@@ -35,6 +37,4 @@ class EmailsApiClient:
         Returns:
         """
         body_json = json.dumps(email_dict)
-        result = utils.aws_post('v1/send', self.base_url, request_body=body_json)
-        assert result['statusCode'] == HTTPStatus.OK, f'Call to email API returned error: {result}'
-        return result
+        return utils.aws_post('v1/send', self.base_url, request_body=body_json)
