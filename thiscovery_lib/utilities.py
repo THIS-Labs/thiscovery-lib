@@ -760,14 +760,18 @@ def api_error_handler(func):
         correlation_id = args[0]['correlation_id']
         try:
             return func(*args, **kwargs)
+        except DeliberateError as err:  # deliberate errors do not raise an Epsagon alarm
+            error_message = err.args[0]
+            return {
+                "statusCode": HTTPStatus.IM_A_TEAPOT,
+                "body": error_as_response_body(error_message, correlation_id)
+            }
         except DuplicateInsertError as err:
             return log_exception_and_return_edited_api_response(err, HTTPStatus.CONFLICT, logger, correlation_id)
         except ObjectDoesNotExistError as err:
             return log_exception_and_return_edited_api_response(err, HTTPStatus.NOT_FOUND, logger, correlation_id)
         except (PatchAttributeNotRecognisedError, PatchOperationNotSupportedError, PatchInvalidJsonError, DetailedIntegrityError, DetailedValueError) as err:
             return log_exception_and_return_edited_api_response(err, HTTPStatus.BAD_REQUEST, logger, correlation_id)
-        except DeliberateError as err:
-            return log_exception_and_return_edited_api_response(err, HTTPStatus.IM_A_TEAPOT, logger, correlation_id)
         except Exception as err:
             return log_exception_and_return_edited_api_response(err, HTTPStatus.INTERNAL_SERVER_ERROR, logger, correlation_id)
 
