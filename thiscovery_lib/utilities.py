@@ -763,7 +763,7 @@ def api_error_handler(func):
         except DeliberateError as err:  # deliberate errors do not raise an Epsagon alarm
             error_message = err.args[0]
             return {
-                "statusCode": HTTPStatus.IM_A_TEAPOT,
+                "statusCode": HTTPStatus.METHOD_NOT_ALLOWED,
                 "body": error_as_response_body(error_message, correlation_id)
             }
         except DuplicateInsertError as err:
