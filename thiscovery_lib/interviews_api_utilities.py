@@ -52,7 +52,7 @@ class InterviewsApiClient(tau.ThiscoveryApiClient):
             data=json.dumps(body),
         )
 
-    @tau.check_response((HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED))
+    @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
     def set_interview_url(self, appointment_id, interview_url, event_type, **kwargs):
         body = {
             'appointment_id': appointment_id,
