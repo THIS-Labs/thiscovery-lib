@@ -40,13 +40,22 @@ class ThiscoveryApiClient:
 
 
 def check_response(expected_status_code):
+    """
+    Args:
+        expected_status_code (str or tuple):
+
+    Returns:
+    """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             response = func(*args, **kwargs)
-            assert response['statusCode'] == expected_status_code, \
-                f'API call initiated by {func.__module__}.{func.__name__} ' \
-                f'returned error: {response}'
+            err_message = f'API call initiated by {func.__module__}.{func.__name__} ' \
+                          f'returned error: {response}'
+            if isinstance(expected_status_code, tuple):
+                assert response['statusCode'] in expected_status_code, err_message
+            else:
+                assert response['statusCode'] == expected_status_code, err_message
             return response
         return wrapper
     return decorator
