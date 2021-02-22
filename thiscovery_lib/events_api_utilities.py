@@ -31,7 +31,7 @@ class EventsApiClient(tau.ThiscoveryApiClient):
             api_prefix='events'
         )
 
-    @tau.check_response(HTTPStatus.OK)
+    @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
     def post_event(self, event):
         return utils.aws_post(
             endpoint_url='v1/event',
