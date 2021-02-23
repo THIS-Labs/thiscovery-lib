@@ -80,7 +80,7 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             if user_task['anon_user_task_id'] == anon_user_task_id:
                 return user_task
 
-    @tau.check_response(HTTPStatus.OK)
+    @tau.check_response(HTTPStatus.NO_CONTENT)
     def set_user_task_completed(self, user_task_id=None, anon_user_task_id=None):
         if user_task_id is not None:
             return utils.aws_request('PUT', 'v1/user-task-completed', self.base_url, params={'user_task_id': user_task_id})
