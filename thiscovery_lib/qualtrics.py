@@ -69,8 +69,9 @@ class SurveyDefinitionsClient(BaseClient):
             correlation_id:
         """
         super().__init__(qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id)
+        self.survey_id = survey_id
         self.base_endpoint = f"{self.base_url}/v3/survey-definitions"
-        self.survey_endpoint = f"{self.base_endpoint}/{survey_id}"
+        self.survey_endpoint = f"{self.base_endpoint}/{self.survey_id}"
         self.questions_endpoint = f"{self.survey_endpoint}/questions"
         self.blocks_endpoint = f"{self.survey_endpoint}/blocks"
         self.flow_endpoint = f"{self.survey_endpoint}/flow"
