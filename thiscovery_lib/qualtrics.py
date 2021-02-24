@@ -73,6 +73,7 @@ class SurveyDefinitionsClient(BaseClient):
         self.survey_endpoint = f"{self.base_endpoint}/{survey_id}"
         self.questions_endpoint = f"{self.survey_endpoint}/questions"
         self.blocks_endpoint = f"{self.survey_endpoint}/blocks"
+        self.flow_endpoint = f"{self.survey_endpoint}/flow"
 
     def refresh_survey_endpoints(self, survey_id):
         self.survey_endpoint = f"{self.base_endpoint}/{survey_id}"
@@ -117,6 +118,9 @@ class SurveyDefinitionsClient(BaseClient):
     def delete_block(self, block_id):
         endpoint = f"{self.blocks_endpoint}/{block_id}"
         return self.qualtrics_request("DELETE", endpoint)
+
+    def update_flow(self, data):
+        return self.qualtrics_request("PUT", self.flow_endpoint, data=data)
 
 
 class DistributionsClient(BaseClient):
