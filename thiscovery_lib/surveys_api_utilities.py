@@ -48,7 +48,7 @@ class SurveysApiClient(tau.ThiscoveryApiClient):
     def get_personal_link(self, query_parameters):
         """
         Args:
-            query_parameters (dict): must contain account_id, survey_id and user_id
+            query_parameters (dict): must contain account, survey_id and user_id
         """
         return utils.aws_get(
             endpoint_url='v1/personal-link',
