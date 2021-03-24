@@ -46,7 +46,6 @@ class Dynamodb(utils.BaseClient):
                     item['created'] = now
                     item['modified'] = now
                     item['type'] = item.get('type', item_type)
-                    self.logger.info('dynamodb put', extra={'table_name': table_name, 'item': item, 'correlation_id': self.correlation_id})
                     if update_allowed:
                         result = batch.put_item(Item=item)
                     else:
