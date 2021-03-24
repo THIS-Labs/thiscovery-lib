@@ -34,6 +34,35 @@ class Dynamodb(utils.BaseClient):
         self.logger.debug('Table full name', extra={'table_full_name': table_full_name})
         return self.client.Table(table_full_name)
 
+    def batch_put_items(self, table_name, items, partition_key_name, item_type=None, update_allowed=False):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.batch_writer
+        """
+        try:
+            table = self.get_table(table_name)
+            with table.batch_writer() as batch:
+                for item in items:
+                    now = str(utils.now_with_tz())
+                    item['created'] = now
+                    item['modified'] = now
+                    item['type'] = item.get('type', item_type)
+                    self.logger.info('dynamodb put', extra={'table_name': table_name, 'item': item, 'correlation_id': self.correlation_id})
+                    if update_allowed:
+                        result = batch.put_item(Item=item)
+                    else:
+                        condition_expression = f'attribute_not_exists({partition_key_name})'  # no need to worry about sort_key here: https://stackoverflow.com/a/32833726
+                        result = table.put_item(Item=item, ConditionExpression=condition_expression)
+                    assert result['ResponseMetadata']['HTTPStatusCode'] == HTTPStatus.OK, f'Dynamodb call failed with response {result}'
+        except ClientError as ex:
+            error_code = ex.response['Error']['Code']
+            errorjson = {
+                'error_code': error_code,
+                'table_name': table_name,
+                'item_type': item_type,
+                'correlation_id': self.correlation_id
+            }
+            raise utils.DetailedValueError('Dynamodb raised an error', errorjson)
+
     def put_item(self, table_name, key, item_type, item_details, item=dict(), update_allowed=False, correlation_id=None, key_name='id', sort_key=None):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.put_item
