@@ -50,7 +50,7 @@ class Dynamodb(utils.BaseClient):
                         result = batch.put_item(Item=item)
                     else:
                         condition_expression = f'attribute_not_exists({partition_key_name})'  # no need to worry about sort_key here: https://stackoverflow.com/a/32833726
-                        result = table.put_item(Item=item, ConditionExpression=condition_expression)
+                        result = batch.put_item(Item=item, ConditionExpression=condition_expression)
                     assert result['ResponseMetadata']['HTTPStatusCode'] == HTTPStatus.OK, f'Dynamodb call failed with response {result}'
         except ClientError as ex:
             error_code = ex.response['Error']['Code']
