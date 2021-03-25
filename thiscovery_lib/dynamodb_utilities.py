@@ -34,7 +34,7 @@ class Dynamodb(utils.BaseClient):
         self.logger.debug('Table full name', extra={'table_full_name': table_full_name})
         return self.client.Table(table_full_name)
 
-    def batch_put_items(self, table_name, items, partition_key_name, item_type=None, update_allowed=False):
+    def batch_put_items(self, table_name, items, partition_key_name, item_type=None):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#DynamoDB.Table.batch_writer
         """
@@ -46,12 +46,7 @@ class Dynamodb(utils.BaseClient):
                     item['created'] = now
                     item['modified'] = now
                     item['type'] = item.get('type', item_type)
-                    if update_allowed:
-                        result = batch.put_item(Item=item)
-                    else:
-                        condition_expression = f'attribute_not_exists({partition_key_name})'  # no need to worry about sort_key here: https://stackoverflow.com/a/32833726
-                        result = batch.put_item(Item=item, ConditionExpression=condition_expression)
-                    assert result['ResponseMetadata']['HTTPStatusCode'] == HTTPStatus.OK, f'Dynamodb call failed with response {result}'
+                    batch.put_item(Item=item)
         except ClientError as ex:
             error_code = ex.response['Error']['Code']
             errorjson = {
