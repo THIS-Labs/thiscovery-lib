@@ -140,6 +140,22 @@ class DistributionsClient(BaseClient):
         """
         return self.qualtrics_request("POST", self.base_endpoint, data=data)
 
+    def list_distributions(self, survey_id: str, **kwargs):
+        """
+        https://api.qualtrics.com/api-reference/reference/distributions.json/paths/~1distributions/get
+
+        Args:
+            survey_id: The ID of the survey to which the distribution belongs.
+            **kwargs:
+
+        Returns:
+        """
+        params = {
+            'surveyId': survey_id,
+        }
+        params.update(kwargs)
+        return self.qualtrics_request("GET", self.base_endpoint, params=params)
+
     def create_individual_links(self, survey_id, contact_list_id, **kwargs):
         now = datetime.datetime.now()
         now_str = now.strftime("%Y-%m-%d_%H:%M:%S")
