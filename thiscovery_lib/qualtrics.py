@@ -15,6 +15,7 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+from __future__ import annotations
 import datetime
 import requests
 import thiscovery_lib.utilities as utils
@@ -140,7 +141,7 @@ class DistributionsClient(BaseClient):
         """
         return self.qualtrics_request("POST", self.base_endpoint, data=data)
 
-    def list_distributions(self, survey_id: str, **kwargs):
+    def list_distributions(self, survey_id: str, **kwargs) -> list[dict]:
         """
         https://api.qualtrics.com/api-reference/reference/distributions.json/paths/~1distributions/get
 
@@ -154,7 +155,9 @@ class DistributionsClient(BaseClient):
             'surveyId': survey_id,
         }
         params.update(kwargs)
-        return self.qualtrics_request("GET", self.base_endpoint, params=params)
+        response = self.qualtrics_request("GET", self.base_endpoint, params=params)
+        assert response['meta']['httpStatus'] == '200 - OK', f'Qualtrics API call failed with response: {response}'
+        return response['result']['elements']
 
     def create_individual_links(self, survey_id, contact_list_id, **kwargs):
         now = datetime.datetime.now()
