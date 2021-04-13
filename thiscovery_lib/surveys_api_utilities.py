@@ -44,6 +44,7 @@ class SurveysApiClient(tau.ThiscoveryApiClient):
             data=json.dumps(body),
         )
 
+    @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_personal_link(self, survey_id, user_id, account='cambridge'):
         return utils.aws_get(
