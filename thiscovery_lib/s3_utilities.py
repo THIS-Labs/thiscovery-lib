@@ -75,7 +75,7 @@ class Transfer(S3Client):
     """
 
     def __init__(self, profile_name=None):
-        super().__init__("s3", profile_name=profile_name)
+        super().__init__(profile_name=profile_name)
         self.transfer = S3Transfer(self.client)
 
     def upload_file(self, file_path: str, bucket_name: str, s3_path: str, **kwargs):
