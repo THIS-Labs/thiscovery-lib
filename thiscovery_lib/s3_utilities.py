@@ -16,6 +16,7 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 import thiscovery_lib.utilities as utils
+from boto3.s3.transfer import S3Transfer
 
 
 class S3Client(utils.BaseClient):
@@ -66,3 +67,17 @@ class S3Client(utils.BaseClient):
             },
             **kwargs
         )
+
+
+class Transfer(S3Client):
+    def __init__(self, profile_name=None):
+        super().__init__("s3", profile_name=profile_name)
+        self.transfer = S3Transfer(self.client)
+
+    def upload_file(self, file_path: str, bucket_name: str, s3_path: str, **kwargs):
+        self.transfer.upload_file(
+            filename=file_path, bucket=bucket_name, key=s3_path, extra_args=kwargs
+        )
+
+    def upload_public_file(self, file_path: str, bucket_name: str, s3_path: str):
+        self.upload_file(file_path, bucket_name, s3_path, **{"ACL": "public-read"})
