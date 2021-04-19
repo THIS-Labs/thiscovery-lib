@@ -83,7 +83,8 @@ class Transfer(S3Client):
             filename=file_path, bucket=bucket_name, key=s3_path, extra_args=kwargs
         )
 
-    def upload_public_file(self, file_path: str, bucket_name: str, s3_path: str):
-        return self.upload_file(
-            file_path, bucket_name, s3_path, **{"ACL": "public-read"}
-        )
+    def upload_public_file(
+        self, file_path: str, bucket_name: str, s3_path: str, **kwargs
+    ):
+        kwargs["ACL"] = "public-read"
+        return self.upload_file(file_path, bucket_name, s3_path, **kwargs)
