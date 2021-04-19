@@ -70,6 +70,10 @@ class S3Client(utils.BaseClient):
 
 
 class Transfer(S3Client):
+    """
+    https://boto3.amazonaws.com/v1/documentation/api/latest/_modules/boto3/s3/transfer.html
+    """
+
     def __init__(self, profile_name=None):
         super().__init__("s3", profile_name=profile_name)
         self.transfer = S3Transfer(self.client)
