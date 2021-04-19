@@ -24,9 +24,9 @@ from thiscovery_lib.interviews_api_utilities import InterviewsApiClient
 
 class TestInterviewUtilities(test_utils.BaseTestCase):
     test_data = {
-        'appointment_id': '399682887',
-        'interview_url': 'https://meet.myinterview.com/1b879c51-2e29-46ae-bd36-3199860e65f2',
-        'event_type': 'booking',
+        "appointment_id": "399682887",
+        "interview_url": "https://meet.myinterview.com/1b879c51-2e29-46ae-bd36-3199860e65f2",
+        "event_type": "booking",
     }
 
     @classmethod
@@ -38,8 +38,8 @@ class TestInterviewUtilities(test_utils.BaseTestCase):
 
     def test_01_set_interview_url_ok(self):
         result = self.interviews_client.set_interview_url(
-            appointment_id=self.test_data['appointment_id'],
-            interview_url=self.test_data['interview_url'],
-            event_type=self.test_data['event_type'],
+            appointment_id=self.test_data["appointment_id"],
+            interview_url=self.test_data["interview_url"],
+            event_type=self.test_data["event_type"],
         )
-        self.assertEqual(HTTPStatus.OK, result['statusCode'])
+        self.assertEqual(HTTPStatus.OK, result["statusCode"])

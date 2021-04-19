@@ -23,18 +23,17 @@ import thiscovery_lib.utilities as utils
 
 
 class EventsApiClient(tau.ThiscoveryApiClient):
-
     def __init__(self, env_override=None, correlation_id=None):
         super().__init__(
             env_override=env_override,
             correlation_id=correlation_id,
-            api_prefix='events'
+            api_prefix="events",
         )
 
     @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
     def post_event(self, event):
         return utils.aws_post(
-            endpoint_url='v1/event',
+            endpoint_url="v1/event",
             base_url=self.base_url,
             request_body=json.dumps(event),
         )

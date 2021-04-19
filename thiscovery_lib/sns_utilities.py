@@ -20,7 +20,7 @@ import thiscovery_lib.utilities as utils
 
 class SnsClient(utils.BaseClient):
     def __init__(self):
-        super().__init__('sns')
+        super().__init__("sns")
 
     def publish(self, message, topic_arn, **kwargs):
         """
@@ -33,13 +33,9 @@ class SnsClient(utils.BaseClient):
 
         Returns:
         """
-        return self.client.publish(
-            Message=message,
-            TopicArn=topic_arn,
-            **kwargs
-        )
+        return self.client.publish(Message=message, TopicArn=topic_arn, **kwargs)
 
     @staticmethod
     def dict_to_plaintext_list(input_dict):
-        list_items = f'\n'.join([f"    - {k}: {v}" for k, v in input_dict.items()])
+        list_items = f"\n".join([f"    - {k}: {v}" for k, v in input_dict.items()])
         return f"{list_items}\n"

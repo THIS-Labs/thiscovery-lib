@@ -24,7 +24,6 @@ from thiscovery_lib.core_api_utilities import CoreApiClient
 
 
 class TestCoreApiUtilities(test_utils.BaseTestCase):
-
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -33,19 +32,17 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
         )
 
     def test_get_user_by_email_ok(self):
-        result = self.core_client.get_user_by_email(
-            email='delia@email.co.uk'
-        )
-        self.assertEqual('35224bd5-f8a8-41f6-8502-f96e12d6ddde', result['id'])
+        result = self.core_client.get_user_by_email(email="delia@email.co.uk")
+        self.assertEqual("35224bd5-f8a8-41f6-8502-f96e12d6ddde", result["id"])
 
     def test_get_user_by_email_not_found(self):
         with self.assertRaises(AssertionError):
-            self.core_client.get_user_by_email(
-                email='non_existent@email.co.uk'
-            )
+            self.core_client.get_user_by_email(email="non_existent@email.co.uk")
 
     def test_get_user_task_from_anon_user_task_id_ok(self):
         result = self.core_client.get_user_task_from_anon_user_task_id(
-            anon_user_task_id='3dce6e9c-9b20-4d7f-a266-9967553dbc16'
+            anon_user_task_id="3dce6e9c-9b20-4d7f-a266-9967553dbc16"
         )
-        self.assertEqual('273b420e-09cb-419c-8b57-b393595dba78', result['project_task_id'])
+        self.assertEqual(
+            "273b420e-09cb-419c-8b57-b393595dba78", result["project_task_id"]
+        )

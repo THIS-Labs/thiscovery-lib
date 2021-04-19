@@ -23,12 +23,11 @@ import thiscovery_lib.utilities as utils
 
 
 class SurveysApiClient(tau.ThiscoveryApiClient):
-
     def __init__(self, env_override=None, correlation_id=None):
         super(SurveysApiClient, self).__init__(
             env_override=env_override,
             correlation_id=correlation_id,
-            api_prefix='surveys'
+            api_prefix="surveys",
         )
 
     @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
@@ -36,23 +35,25 @@ class SurveysApiClient(tau.ThiscoveryApiClient):
         body = {
             **kwargs,
         }
-        self.logger.debug("Calling surveys API put_response_api endpoint", extra={'body': body})
+        self.logger.debug(
+            "Calling surveys API put_response_api endpoint", extra={"body": body}
+        )
         return utils.aws_request(
-            method='PUT',
-            endpoint_url='v1/response',
+            method="PUT",
+            endpoint_url="v1/response",
             base_url=self.base_url,
             data=json.dumps(body),
         )
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
-    def get_personal_link(self, survey_id, user_id, account='cambridge'):
+    def get_personal_link(self, survey_id, user_id, account="cambridge"):
         return utils.aws_get(
-            endpoint_url='v1/personal-link',
+            endpoint_url="v1/personal-link",
             base_url=self.base_url,
             params={
-                'survey_id': survey_id,
-                'user_id': user_id,
-                'account': account,
+                "survey_id": survey_id,
+                "user_id": user_id,
+                "account": account,
             },
         )

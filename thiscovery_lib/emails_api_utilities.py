@@ -23,10 +23,9 @@ import thiscovery_lib.utilities as utils
 
 
 class EmailsApiClient:
-
     def __init__(self, correlation_id=None):
         self.correlation_id = correlation_id
-        self.base_url = 'https://email-api.thiscovery.org/'
+        self.base_url = "https://email-api.thiscovery.org/"
 
     @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
     def send_email(self, email_dict):
@@ -37,4 +36,4 @@ class EmailsApiClient:
         Returns:
         """
         body_json = json.dumps(email_dict)
-        return utils.aws_post('v1/send', self.base_url, request_body=body_json)
+        return utils.aws_post("v1/send", self.base_url, request_body=body_json)

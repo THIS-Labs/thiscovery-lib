@@ -24,17 +24,20 @@ from dateutil import parser
 
 
 class BaseClient:
-
     def __init__(self, qualtrics_account_name, api_token=None, correlation_id=None):
-        self.base_url = f'https://{qualtrics_account_name}.eu.qualtrics.com/API'
+        self.base_url = f"https://{qualtrics_account_name}.eu.qualtrics.com/API"
         if api_token is None:
-            self.api_token = utils.get_secret('qualtrics-connection')[qualtrics_account_name]
+            self.api_token = utils.get_secret("qualtrics-connection")[
+                qualtrics_account_name
+            ]
         else:
             self.api_token = api_token
         self.logger = utils.get_logger()
         self.correlation_id = correlation_id
 
-    def qualtrics_request(self, method, endpoint_url, api_key=None, params=None, data=None):
+    def qualtrics_request(
+        self, method, endpoint_url, api_key=None, params=None, data=None
+    ):
         if api_key is None:
             api_key = self.api_token
 
@@ -44,7 +47,15 @@ class BaseClient:
             "x-api-token": api_key,
         }
 
-        self.logger.debug('Qualtrics API call', extra={'method': method, 'url': endpoint_url, 'params': params, 'json': data})
+        self.logger.debug(
+            "Qualtrics API call",
+            extra={
+                "method": method,
+                "url": endpoint_url,
+                "params": params,
+                "json": data,
+            },
+        )
         response = requests.request(
             method=method,
             url=endpoint_url,
@@ -57,19 +68,24 @@ class BaseClient:
             return response.json()
         else:
             print(response.text)
-            raise utils.DetailedValueError('Call to Qualtrics API failed', details={'response.text': response.text})
+            raise utils.DetailedValueError(
+                "Call to Qualtrics API failed", details={"response.text": response.text}
+            )
 
 
 class SurveyDefinitionsClient(BaseClient):
-
-    def __init__(self, qualtrics_account_name='cambridge', survey_id=None, correlation_id=None):
+    def __init__(
+        self, qualtrics_account_name="cambridge", survey_id=None, correlation_id=None
+    ):
         """
         Args:
             qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
             survey_id:
             correlation_id:
         """
-        super().__init__(qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id)
+        super().__init__(
+            qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id
+        )
         self.base_endpoint = f"{self.base_url}/v3/survey-definitions"
         self.survey_endpoint = f"{self.base_endpoint}/{survey_id}"
         self.questions_endpoint = f"{self.survey_endpoint}/questions"
@@ -89,7 +105,7 @@ class SurveyDefinitionsClient(BaseClient):
         data = {
             "SurveyName": survey_name,
             "Language": "EN-GB",
-            "ProjectCategory": "CORE"
+            "ProjectCategory": "CORE",
         }
         response = self.qualtrics_request("POST", self.base_endpoint, data=data)
         if response["meta"]["httpStatus"] == "200 - OK":
@@ -97,7 +113,10 @@ class SurveyDefinitionsClient(BaseClient):
             self.refresh_survey_endpoints(survey_id)
             return survey_id
         else:
-            raise utils.DetailedValueError("API call to Qualtrics create survey method failed", details={'response': response})
+            raise utils.DetailedValueError(
+                "API call to Qualtrics create survey method failed",
+                details={"response": response},
+            )
 
     def create_question(self, data):
         return self.qualtrics_request("POST", self.questions_endpoint, data=data)
@@ -109,7 +128,7 @@ class SurveyDefinitionsClient(BaseClient):
     def delete_question(self, question_id):
         endpoint = f"{self.questions_endpoint}/{question_id}"
         return self.qualtrics_request("DELETE", endpoint)
-    
+
     def create_block(self, data):
         return self.qualtrics_request("POST", self.blocks_endpoint, data=data)
 
@@ -126,13 +145,15 @@ class SurveyDefinitionsClient(BaseClient):
 
 
 class DistributionsClient(BaseClient):
-    def __init__(self, qualtrics_account_name='cambridge', correlation_id=None):
+    def __init__(self, qualtrics_account_name="cambridge", correlation_id=None):
         """
         Args:
             qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
             correlation_id:
         """
-        super().__init__(qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id)
+        super().__init__(
+            qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id
+        )
         self.base_endpoint = f"{self.base_url}/v3/distributions"
 
     def _create_distribution(self, data):
@@ -152,12 +173,14 @@ class DistributionsClient(BaseClient):
         Returns:
         """
         params = {
-            'surveyId': survey_id,
+            "surveyId": survey_id,
         }
         params.update(kwargs)
         response = self.qualtrics_request("GET", self.base_endpoint, params=params)
-        assert response['meta']['httpStatus'] == '200 - OK', f'Qualtrics API call failed with response: {response}'
-        return response['result']['elements']
+        assert (
+            response["meta"]["httpStatus"] == "200 - OK"
+        ), f"Qualtrics API call failed with response: {response}"
+        return response["result"]["elements"]
 
     def create_individual_links(self, survey_id, contact_list_id, **kwargs):
         now = datetime.datetime.now()
@@ -179,9 +202,9 @@ class DistributionsClient(BaseClient):
         """
         https://api.qualtrics.com/api-reference/reference/distributions.json/paths/~1distributions~1%7BdistributionId%7D~1links/get
         """
-        endpoint = f'{self.base_endpoint}/{distribution_id}/links'
+        endpoint = f"{self.base_endpoint}/{distribution_id}/links"
         params = {
-            'surveyId': survey_id,
+            "surveyId": survey_id,
         }
         return self.qualtrics_request("GET", endpoint, params=params)
 
@@ -189,19 +212,23 @@ class DistributionsClient(BaseClient):
         """
         https://api.qualtrics.com/api-reference/reference/distributions.json/paths/~1distributions~1%7BdistributionId%7D/delete
         """
-        endpoint = f'{self.base_endpoint}/{distribution_id}'
+        endpoint = f"{self.base_endpoint}/{distribution_id}"
         return self.qualtrics_request("DELETE", endpoint)
 
 
 class ResponsesClient(BaseClient):
-    def __init__(self, survey_id, qualtrics_account_name='cambridge', correlation_id=None):
+    def __init__(
+        self, survey_id, qualtrics_account_name="cambridge", correlation_id=None
+    ):
         """
         Args:
             survey_id:
             qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
             correlation_id:
         """
-        super().__init__(qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id)
+        super().__init__(
+            qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id
+        )
         self.base_endpoint = f"{self.base_url}/v3/surveys/{survey_id}"
 
     def retrieve_survey_response_schema(self):
@@ -210,7 +237,9 @@ class ResponsesClient(BaseClient):
         """
         url = f"{self.base_endpoint}/response-schema"
         response = self.qualtrics_request("GET", endpoint_url=url)
-        assert response['meta']['httpStatus'] == '200 - OK', f'Qualtrics API call failed with response: {response}'
+        assert (
+            response["meta"]["httpStatus"] == "200 - OK"
+        ), f"Qualtrics API call failed with response: {response}"
         return response
 
     def retrieve_response(self, response_id):
@@ -219,7 +248,9 @@ class ResponsesClient(BaseClient):
         """
         url = f"{self.base_endpoint}/responses/{response_id}"
         response = self.qualtrics_request("GET", endpoint_url=url)
-        assert response['meta']['httpStatus'] == '200 - OK', f'Qualtrics API call failed with response: {response}'
+        assert (
+            response["meta"]["httpStatus"] == "200 - OK"
+        ), f"Qualtrics API call failed with response: {response}"
         return response
 
 

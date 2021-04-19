@@ -23,35 +23,38 @@ import thiscovery_lib.utilities as utils
 
 
 class CoreApiClient(tau.ThiscoveryApiClient):
-
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_user_by_email(self, email):
-        return utils.aws_get('v1/user', self.base_url, params={'email': email})
+        return utils.aws_get("v1/user", self.base_url, params={"email": email})
 
     def get_user_id_by_email(self, email):
         user = self.get_user_by_email(email=email)
-        return user['id']
+        return user["id"]
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_projects(self):
-        return utils.aws_get('v1/project', self.base_url, params={})
+        return utils.aws_get("v1/project", self.base_url, params={})
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_userprojects(self, user_id):
-        return utils.aws_get('v1/userproject', self.base_url, params={'user_id': user_id})
+        return utils.aws_get(
+            "v1/userproject", self.base_url, params={"user_id": user_id}
+        )
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def list_users_by_project(self, project_id):
-        return utils.aws_get('v1/list-project-users', self.base_url, params={'project_id': project_id})
+        return utils.aws_get(
+            "v1/list-project-users", self.base_url, params={"project_id": project_id}
+        )
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def _list_user_tasks(self, query_parameter):
-        return utils.aws_get('v1/usertask', self.base_url, params=query_parameter)
+        return utils.aws_get("v1/usertask", self.base_url, params=query_parameter)
 
     def list_user_tasks(self, query_parameter):
         """
@@ -67,27 +70,35 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             return user_task_info
 
     def get_user_task_id_for_project(self, user_id, project_task_id):
-        result = self.list_user_tasks(query_parameter={'user_id': user_id})
+        result = self.list_user_tasks(query_parameter={"user_id": user_id})
         for user_task in result:
-            if user_task['project_task_id'] == project_task_id:
-                return user_task['user_task_id']
+            if user_task["project_task_id"] == project_task_id:
+                return user_task["user_task_id"]
 
     def get_user_task_from_anon_user_task_id(self, anon_user_task_id):
-        result = self.list_user_tasks(query_parameter={
-            'anon_user_task_id': anon_user_task_id
-        })
+        result = self.list_user_tasks(
+            query_parameter={"anon_user_task_id": anon_user_task_id}
+        )
         for user_task in result:
-            if user_task['anon_user_task_id'] == anon_user_task_id:
+            if user_task["anon_user_task_id"] == anon_user_task_id:
                 return user_task
 
     @tau.check_response(HTTPStatus.NO_CONTENT)
     def set_user_task_completed(self, user_task_id=None, anon_user_task_id=None):
         if user_task_id is not None:
-            return utils.aws_request('PUT', 'v1/user-task-completed', self.base_url, params={'user_task_id': user_task_id})
+            return utils.aws_request(
+                "PUT",
+                "v1/user-task-completed",
+                self.base_url,
+                params={"user_task_id": user_task_id},
+            )
         elif anon_user_task_id is not None:
-            return utils.aws_request('PUT', 'v1/user-task-completed', self.base_url, params={
-                'anon_user_task_id': anon_user_task_id
-            })
+            return utils.aws_request(
+                "PUT",
+                "v1/user-task-completed",
+                self.base_url,
+                params={"anon_user_task_id": anon_user_task_id},
+            )
 
     @tau.check_response(HTTPStatus.NO_CONTENT, HTTPStatus.METHOD_NOT_ALLOWED)
     def send_transactional_email(self, template_name, **kwargs):
@@ -101,19 +112,24 @@ class CoreApiClient(tau.ThiscoveryApiClient):
 
         Returns:
         """
-        email_dict = {
-            "template_name": template_name,
-            **kwargs
-        }
+        email_dict = {"template_name": template_name, **kwargs}
         if utils.running_unit_tests():
-            email_dict['template_name'] = f'NA_{template_name}'
-        self.logger.debug("Transactional email API call", extra={'email_dict': email_dict})
-        return utils.aws_post('v1/send-transactional-email', self.base_url, request_body=json.dumps(email_dict))
+            email_dict["template_name"] = f"NA_{template_name}"
+        self.logger.debug(
+            "Transactional email API call", extra={"email_dict": email_dict}
+        )
+        return utils.aws_post(
+            "v1/send-transactional-email",
+            self.base_url,
+            request_body=json.dumps(email_dict),
+        )
 
     def get_project_from_project_task_id(self, project_task_id):
         project_list = self.get_projects()
         for project in project_list:
-            for t in project['tasks']:
-                if t['id'] == project_task_id:
+            for t in project["tasks"]:
+                if t["id"] == project_task_id:
                     return project
-        raise utils.ObjectDoesNotExistError(f'Project task {project_task_id} not found', details={})
+        raise utils.ObjectDoesNotExistError(
+            f"Project task {project_task_id} not found", details={}
+        )

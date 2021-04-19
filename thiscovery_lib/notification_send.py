@@ -17,25 +17,44 @@
 #
 import uuid
 
-from thiscovery_lib.notifications import NotificationStatus, NotificationType, save_notification, create_notification
+from thiscovery_lib.notifications import (
+    NotificationStatus,
+    NotificationType,
+    save_notification,
+    create_notification,
+)
 
 
 def notify_new_user_registration(new_user, correlation_id):
-    notification_item = create_notification(new_user['email'])
-    key = new_user['id']
-    save_notification(key, NotificationType.USER_REGISTRATION.value, new_user, notification_item, correlation_id)
+    notification_item = create_notification(new_user["email"])
+    key = new_user["id"]
+    save_notification(
+        key,
+        NotificationType.USER_REGISTRATION.value,
+        new_user,
+        notification_item,
+        correlation_id,
+    )
 
 
 def notify_new_task_signup(task_signup, correlation_id):
-    notification_item = create_notification(task_signup['user_id'])
+    notification_item = create_notification(task_signup["user_id"])
     # use existing user_task id as notification id
-    key = task_signup['id']
-    save_notification(key, NotificationType.TASK_SIGNUP.value, task_signup, notification_item, correlation_id)
+    key = task_signup["id"]
+    save_notification(
+        key,
+        NotificationType.TASK_SIGNUP.value,
+        task_signup,
+        notification_item,
+        correlation_id,
+    )
 
 
-def notify_user_login(login_info, correlation_id, stack_name='thiscovery-core'):
-    assert 'login_datetime' in login_info.keys(), f"login_datetime not present in notification body ({login_info})"
-    notification_item = create_notification(login_info['email'])
+def notify_user_login(login_info, correlation_id, stack_name="thiscovery-core"):
+    assert (
+        "login_datetime" in login_info.keys()
+    ), f"login_datetime not present in notification body ({login_info})"
+    notification_item = create_notification(login_info["email"])
     key = str(uuid.uuid4())
     save_notification(
         key,
@@ -49,9 +68,17 @@ def notify_user_login(login_info, correlation_id, stack_name='thiscovery-core'):
 
 def new_transactional_email_notification(email_dict, correlation_id=None):
     try:
-        user_label = email_dict['to_recipient_id']
+        user_label = email_dict["to_recipient_id"]
     except KeyError:
-        user_label = email_dict.get('to_recipient_email')
-    notification_item = create_notification(f"{email_dict['template_name']}_{user_label}")
+        user_label = email_dict.get("to_recipient_email")
+    notification_item = create_notification(
+        f"{email_dict['template_name']}_{user_label}"
+    )
     key = str(uuid.uuid4())
-    save_notification(key, NotificationType.TRANSACTIONAL_EMAIL.value, email_dict, notification_item, correlation_id)
+    save_notification(
+        key,
+        NotificationType.TRANSACTIONAL_EMAIL.value,
+        email_dict,
+        notification_item,
+        correlation_id,
+    )

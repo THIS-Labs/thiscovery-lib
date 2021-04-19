@@ -23,27 +23,28 @@ from pprint import pprint
 
 
 class TestSes(test_utils.BaseTestCase):
-
     def test_dict_to_html_ul(self):
         test_dict = {
-            'anon_project_specific_user_id': 'f2fac677-cb2c-42a0-9fa6-494059352569',
-            'anon_user_task_id': None,
-            'appointment_type_id': 123456,
-            'appointment_datetime': '2021-01-08T10:15:00+0000',
-            'calendar_name': 'Andre',
-            'calendar_id': 123456,
-            'appointment_type': 'Interview for GPs',
-            'appointment_id': 123456,
+            "anon_project_specific_user_id": "f2fac677-cb2c-42a0-9fa6-494059352569",
+            "anon_user_task_id": None,
+            "appointment_type_id": 123456,
+            "appointment_datetime": "2021-01-08T10:15:00+0000",
+            "calendar_name": "Andre",
+            "calendar_id": 123456,
+            "appointment_type": "Interview for GPs",
+            "appointment_id": 123456,
         }
-        expected_result = '<ul>\n' \
-                          '    <li>anon_project_specific_user_id: f2fac677-cb2c-42a0-9fa6-494059352569</li>\n' \
-                          '    <li>anon_user_task_id: None</li>\n' \
-                          '    <li>appointment_type_id: 123456</li>\n' \
-                          '    <li>appointment_datetime: 2021-01-08T10:15:00+0000</li>\n' \
-                          '    <li>calendar_name: Andre</li>\n' \
-                          '    <li>calendar_id: 123456</li>\n' \
-                          '    <li>appointment_type: Interview for GPs</li>\n' \
-                          '    <li>appointment_id: 123456</li>\n' \
-                          '</ul>'
+        expected_result = (
+            "<ul>\n"
+            "    <li>anon_project_specific_user_id: f2fac677-cb2c-42a0-9fa6-494059352569</li>\n"
+            "    <li>anon_user_task_id: None</li>\n"
+            "    <li>appointment_type_id: 123456</li>\n"
+            "    <li>appointment_datetime: 2021-01-08T10:15:00+0000</li>\n"
+            "    <li>calendar_name: Andre</li>\n"
+            "    <li>calendar_id: 123456</li>\n"
+            "    <li>appointment_type: Interview for GPs</li>\n"
+            "    <li>appointment_id: 123456</li>\n"
+            "</ul>"
+        )
         result = SesClient.dict_to_html_ul(test_dict)
         self.assertEqual(expected_result, result)

@@ -22,11 +22,10 @@ import thiscovery_lib.utilities as utils
 
 
 class EventbridgeClient(utils.BaseClient):
-
     def __init__(self, profile_name=None):
-        super().__init__('events', profile_name=profile_name)
+        super().__init__("events", profile_name=profile_name)
 
-    def put_event(self, thiscovery_event, event_bus_name='thiscovery-event-bus'):
+    def put_event(self, thiscovery_event, event_bus_name="thiscovery-event-bus"):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/events.html#EventBridge.Client.put_events
 
@@ -38,12 +37,12 @@ class EventbridgeClient(utils.BaseClient):
         """
         entries = [
             {
-                'Source': thiscovery_event.event_source,
-                'Resources': [],
-                'Time': thiscovery_event.event_time,
-                'DetailType': thiscovery_event.detail_type,
-                'Detail': thiscovery_event.detail,
-                'EventBusName': event_bus_name
+                "Source": thiscovery_event.event_source,
+                "Resources": [],
+                "Time": thiscovery_event.event_time,
+                "DetailType": thiscovery_event.detail_type,
+                "Detail": thiscovery_event.detail,
+                "EventBusName": event_bus_name,
             }
         ]
         return self.client.put_events(Entries=entries)
@@ -58,19 +57,21 @@ class ThiscoveryEvent:
                             event_time (string in iso format) - if this is omitted creation time of entity will be used
         """
         try:
-            self.detail_type = event['detail-type']
+            self.detail_type = event["detail-type"]
         except KeyError:
-            raise utils.DetailedValueError('mandatory detail-type data not provided', dict())
+            raise utils.DetailedValueError(
+                "mandatory detail-type data not provided", dict()
+            )
 
         try:
-            detail = event['detail']
+            detail = event["detail"]
         except KeyError:
-            raise utils.DetailedValueError('mandatory detail data not provided', dict())
+            raise utils.DetailedValueError("mandatory detail data not provided", dict())
 
         self.detail = json.dumps(detail)
         # todo - validate type
-        self.event_source = event.get('event_source', 'thiscovery')
-        self.event_time = event.get('event_time', str(utils.now_with_tz()))
+        self.event_source = event.get("event_source", "thiscovery")
+        self.event_time = event.get("event_time", str(utils.now_with_tz()))
 
     def put_event(self):
         ebc = EventbridgeClient()

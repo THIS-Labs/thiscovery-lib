@@ -23,7 +23,7 @@ class SesClient(utils.BaseClient):
     CHARSET = "UTF-8"
 
     def __init__(self, profile_name=None):
-        super().__init__('ses', profile_name=profile_name)
+        super().__init__("ses", profile_name=profile_name)
 
     def send_simple_email(self, source, to_, subject, body_text, body_html, **kwargs):
         """
@@ -40,25 +40,27 @@ class SesClient(utils.BaseClient):
         Returns:
             None
         """
-        return self.send_email(source=source, destination={'ToAddresses': [to_]},
-                               message={
-                                   'Subject': {
-                                       'Charset': self.CHARSET,
-                                       'Data': subject,
-                                   },
-                                   'Body': {
-                                       'Html': {
-                                           'Charset': self.CHARSET,
-                                           'Data': body_html,
-                                       },
-                                       'Text': {
-                                           'Charset': self.CHARSET,
-                                           'Data': body_text,
-                                       },
-                                   },
-                               },
-                               **kwargs
-                               )
+        return self.send_email(
+            source=source,
+            destination={"ToAddresses": [to_]},
+            message={
+                "Subject": {
+                    "Charset": self.CHARSET,
+                    "Data": subject,
+                },
+                "Body": {
+                    "Html": {
+                        "Charset": self.CHARSET,
+                        "Data": body_html,
+                    },
+                    "Text": {
+                        "Charset": self.CHARSET,
+                        "Data": body_text,
+                    },
+                },
+            },
+            **kwargs,
+        )
 
     def send_email(self, source, destination, message, **kwargs):
         """
@@ -74,8 +76,10 @@ class SesClient(utils.BaseClient):
             None
         """
         try:
-            response = self.client.send_email(Destination=destination, Message=message, Source=source)
-            status_code = response['ResponseMetadata']['HTTPStatusCode']
+            response = self.client.send_email(
+                Destination=destination, Message=message, Source=source
+            )
+            status_code = response["ResponseMetadata"]["HTTPStatusCode"]
             return status_code
         except ClientError as e:
             self.logger.error(e)
@@ -86,7 +90,7 @@ class SesClient(utils.BaseClient):
         """
         try:
             response = self.client.send_raw_email(**kwargs)
-            status_code = response['ResponseMetadata']['HTTPStatusCode']
+            status_code = response["ResponseMetadata"]["HTTPStatusCode"]
             return status_code
         except ClientError as e:
             self.logger.error(e)
@@ -95,5 +99,7 @@ class SesClient(utils.BaseClient):
     def dict_to_html_ul(input_dict):
         begin_list = "<ul>"
         end_list = "</ul>"
-        list_items = '\n'.join([f"    <li>{k}: {v}</li>" for k, v in input_dict.items()])
+        list_items = "\n".join(
+            [f"    <li>{k}: {v}</li>" for k, v in input_dict.items()]
+        )
         return f"{begin_list}\n{list_items}\n{end_list}"

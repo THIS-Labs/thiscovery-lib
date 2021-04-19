@@ -28,30 +28,28 @@ from pprint import pprint
 
 class TestThiscoveryEvent(test_utils.BaseTestCase):
     min_event = {
-        'detail-type': 'test_event',
-        'detail': {
-            'description': 'this is a test event'
-        }
+        "detail-type": "test_event",
+        "detail": {"description": "this is a test event"},
     }
 
     def test_minimum_init_ok(self):
         te = ThiscoveryEvent(event=self.min_event)
         expected_keys = [
-            'detail',
-            'detail_type',
-            'event_source',
-            'event_time',
-            'id',
+            "detail",
+            "detail_type",
+            "event_source",
+            "event_time",
+            "id",
         ]
         self.assertCountEqual(expected_keys, list(te.__dict__.keys()))
-        self.assertEqual('thiscovery', te.event_source)
+        self.assertEqual("thiscovery", te.event_source)
 
     def test_init_with_optional_attributes_ok(self):
         test_event = {
             **self.min_event,
-            'event_source': 'qualtrics',
-            'id': 'test_event_id',
+            "event_source": "qualtrics",
+            "id": "test_event_id",
         }
         te = ThiscoveryEvent(event=test_event)
-        self.assertEqual('qualtrics', te.event_source)
-        self.assertEqual('test_event_id', te.id)
+        self.assertEqual("qualtrics", te.event_source)
+        self.assertEqual("test_event_id", te.id)

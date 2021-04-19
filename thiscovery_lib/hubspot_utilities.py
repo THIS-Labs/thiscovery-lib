@@ -24,10 +24,16 @@ from datetime import datetime, timezone
 
 from thiscovery_lib import dynamodb_utilities as ddb_utils
 import thiscovery_lib.utilities as utils
-from thiscovery_lib.utilities import get_secret, get_logger, get_aws_namespace, DetailedValueError, now_with_tz
+from thiscovery_lib.utilities import (
+    get_secret,
+    get_logger,
+    get_aws_namespace,
+    DetailedValueError,
+    now_with_tz,
+)
 
 
-DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # use namespace_override to enable using dev hubspot with production Thiscovery
 # hubspot_connection = get_secret('hubspot-connection', namespace_override='/dev/')
@@ -35,11 +41,11 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 # client_id = hubspot_connection['client-id']
 # client_secret = hubspot_connection['client-secret']
 
-BASE_URL = 'https://api.hubapi.com'
-MOCK_BASE_URL = 'https://0ed709fe-f683-460b-843b-844744e419f9.mock.pstmn.io'
-CONTACTS_ENDPOINT = '/contacts/v1'
-INTEGRATIONS_ENDPOINT = '/integrations/v1'
-TASK_SIGNUP_TLE_TYPE_NAME = 'task-signup'
+BASE_URL = "https://api.hubapi.com"
+MOCK_BASE_URL = "https://0ed709fe-f683-460b-843b-844744e419f9.mock.pstmn.io"
+CONTACTS_ENDPOINT = "/contacts/v1"
+INTEGRATIONS_ENDPOINT = "/integrations/v1"
+TASK_SIGNUP_TLE_TYPE_NAME = "task-signup"
 
 
 # region decorators
@@ -50,34 +56,49 @@ def hubspot_api_error_handler(func):
         if status_code == http.HTTPStatus.NO_CONTENT:
             return status_code
         elif status_code == http.HTTPStatus.BAD_REQUEST:
-            raise utils.DetailedValueError('Received a BAD REQUEST (400) response from the HubSpot API',
-                                           details={'result': status_code})
+            raise utils.DetailedValueError(
+                "Received a BAD REQUEST (400) response from the HubSpot API",
+                details={"result": status_code},
+            )
         elif status_code == http.HTTPStatus.UNAUTHORIZED:
-            raise utils.DetailedValueError('Received a UNAUTHORIZED (401) response from the HubSpot API',
-                                           details={'result': status_code})
+            raise utils.DetailedValueError(
+                "Received a UNAUTHORIZED (401) response from the HubSpot API",
+                details={"result": status_code},
+            )
         elif status_code == http.HTTPStatus.NOT_FOUND:
-            raise utils.DetailedValueError('Received a NOT FOUND (404) response from the HubSpot API',
-                                           details={'result': status_code})
+            raise utils.DetailedValueError(
+                "Received a NOT FOUND (404) response from the HubSpot API",
+                details={"result": status_code},
+            )
         elif status_code == http.HTTPStatus.INTERNAL_SERVER_ERROR:
-            raise utils.DetailedValueError('Received a INTERNAL SERVER ERROR (500) response from the HubSpot API',
-                                           details={'result': status_code})
+            raise utils.DetailedValueError(
+                "Received a INTERNAL SERVER ERROR (500) response from the HubSpot API",
+                details={"result": status_code},
+            )
         else:
-            raise utils.DetailedValueError('Received an error from the HubSpot API',
-                                           details={'result': status_code})
+            raise utils.DetailedValueError(
+                "Received an error from the HubSpot API",
+                details={"result": status_code},
+            )
+
     return wrapper
+
+
 # endregion
 
 
 class HubSpotClient:
-    tokens_table_name = 'tokens'
-    token_item_id = 'hubspot'
-    expired_token_item_id = 'hubspot-expired'
-    token_item_type = 'oAuth_token'
-    app_id_secret_name = 'app-id'
-    client_id_secret_name = 'client-id'
-    client_secret_name = 'client-secret'
+    tokens_table_name = "tokens"
+    token_item_id = "hubspot"
+    expired_token_item_id = "hubspot-expired"
+    token_item_type = "oAuth_token"
+    app_id_secret_name = "app-id"
+    client_id_secret_name = "client-id"
+    client_secret_name = "client-secret"
 
-    def __init__(self, mock_server=False, correlation_id=None, stack_name='thiscovery-core'):
+    def __init__(
+        self, mock_server=False, correlation_id=None, stack_name="thiscovery-core"
+    ):
         self.mock_server = mock_server
         self.logger = get_logger()
         self.correlation_id = correlation_id
@@ -87,8 +108,8 @@ class HubSpotClient:
         if not self.tokens:
             self.access_token, self.refresh_token = None, None
         else:
-            self.access_token = self.tokens['access_token']
-            self.refresh_token = self.tokens['refresh_token']
+            self.access_token = self.tokens["access_token"]
+            self.refresh_token = self.tokens["refresh_token"]
 
         self.connection_secret = None
         self.app_id = None
@@ -99,9 +120,13 @@ class HubSpotClient:
             item_name = self.token_item_id
 
         try:
-            return self.ddb.get_item(self.tokens_table_name, item_name, self.correlation_id)['details']
+            return self.ddb.get_item(
+                self.tokens_table_name, item_name, self.correlation_id
+            )["details"]
         except:
-            self.logger.warning(f'could not retrieve hubspot token from dynamodb item {item_name}')
+            self.logger.warning(
+                f"could not retrieve hubspot token from dynamodb item {item_name}"
+            )
             return None
 
     def create_expired_token_item(self):
@@ -114,19 +139,29 @@ class HubSpotClient:
         """
         token = self.get_token_from_database()
         if not token:
-            raise utils.ObjectDoesNotExistError('Hubspot token not found', details={'correlation_id': self.correlation_id})
+            raise utils.ObjectDoesNotExistError(
+                "Hubspot token not found",
+                details={"correlation_id": self.correlation_id},
+            )
         response = self.save_token(token, item_name=self.expired_token_item_id)
         # todo: add response check here; for now log its value
-        self.logger.debug('put_item response', extra={'response': response, 'correlation_id': self.correlation_id})
+        self.logger.debug(
+            "put_item response",
+            extra={"response": response, "correlation_id": self.correlation_id},
+        )
         return token
 
     def get_expired_token_from_database(self):
         """
         An expired token is useful only for testing.
         """
-        expired_token = self.get_token_from_database(item_name=self.expired_token_item_id)
+        expired_token = self.get_token_from_database(
+            item_name=self.expired_token_item_id
+        )
         if expired_token is None:
-            self.logger.warning('Could not find an expired token; creating one now so returned token might still be valid')
+            self.logger.warning(
+                "Could not find an expired token; creating one now so returned token might still be valid"
+            )
             expired_token = self.create_expired_token_item()
         return expired_token
 
@@ -138,11 +173,13 @@ class HubSpotClient:
             HubSpot connection secret
         """
         if self.connection_secret is None:
-            self.connection_secret = get_secret('hubspot-connection')
+            self.connection_secret = get_secret("hubspot-connection")
             self.app_id = self.connection_secret[self.app_id_secret_name]
         return self.connection_secret
 
-    def get_new_token_from_hubspot(self, refresh_token='self value', code=None, redirect_url=None):
+    def get_new_token_from_hubspot(
+        self, refresh_token="self value", code=None, redirect_url=None
+    ):
         """
         Use this function to renew the HubSpot token.
 
@@ -157,7 +194,7 @@ class HubSpotClient:
         Notes:
             Saves the values of 'access_token', 'refresh_token' and 'app-id' to class instance attributes
         """
-        if refresh_token == 'self value':
+        if refresh_token == "self value":
             refresh_token = self.refresh_token
 
         hubspot_connection = self.get_hubspot_connection_secret()
@@ -171,22 +208,22 @@ class HubSpotClient:
         }
 
         if redirect_url is not None:
-            formData['redirect_uri'] = redirect_url
+            formData["redirect_uri"] = redirect_url
 
         if refresh_token:
-            formData['grant_type'] = "refresh_token"
-            formData['refresh_token'] = refresh_token
+            formData["grant_type"] = "refresh_token"
+            formData["refresh_token"] = refresh_token
         else:
-            formData['grant_type'] = "authorization_code"
-            formData['code'] = code
+            formData["grant_type"] = "authorization_code"
+            formData["code"] = code
 
-        res = requests.post('https://api.hubapi.com/oauth/v1/token', data=formData)
+        res = requests.post("https://api.hubapi.com/oauth/v1/token", data=formData)
         self.tokens = res.json()
-        self.access_token = self.tokens['access_token']
-        self.refresh_token = self.tokens['refresh_token']
+        self.access_token = self.tokens["access_token"]
+        self.refresh_token = self.tokens["refresh_token"]
 
         self.save_token(self.tokens)
-        return {**self.tokens, 'app-id': self.app_id}
+        return {**self.tokens, "app-id": self.app_id}
 
     def get_initial_token_from_hubspot(self):
         """
@@ -197,25 +234,33 @@ class HubSpotClient:
         """
         from local.dev_config import INITIAL_HUBSPOT_AUTH_CODE, NGROK_URL_ID
 
-        redirect_url = 'https://' + NGROK_URL_ID + '.ngrok.io/hubspot'
+        redirect_url = "https://" + NGROK_URL_ID + ".ngrok.io/hubspot"
         return self.get_new_token_from_hubspot(
             refresh_token=None,
             code=INITIAL_HUBSPOT_AUTH_CODE,
-            redirect_url=redirect_url
+            redirect_url=redirect_url,
         )
 
     def save_token(self, new_token, item_name=None):
         if item_name is None:
             item_name = self.token_item_id
-        return self.ddb.put_item(self.tokens_table_name, item_name, self.token_item_type, new_token, dict(),
-                                 update_allowed=True, correlation_id=self.correlation_id)
+        return self.ddb.put_item(
+            self.tokens_table_name,
+            item_name,
+            self.token_item_type,
+            new_token,
+            dict(),
+            update_allowed=True,
+            correlation_id=self.correlation_id,
+        )
+
     # endregion
 
     # region get/post/put/delete requests
     def get_token_request_headers(self):
         return {
-            'Content-Type': 'application/json',
-            'Authorization': f'Bearer {self.access_token}',
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.access_token}",
         }
 
     def hubspot_token_request(self, method, url, params={}, data={}):
@@ -241,49 +286,70 @@ class HubSpotClient:
                 headers=headers,
                 data=json.dumps(data),
             )
-            self.logger.info('Logging request and result',
-                             extra={
-                                 'request': {
-                                     'method': method,
-                                     'url': full_url,
-                                     'data': data,
-                                 },
-                                 'result': result.text
-                             })
-            if method in ['POST', 'PUT', 'DELETE']:
-                if result.status_code in [HTTPStatus.OK, HTTPStatus.NO_CONTENT, HTTPStatus.CREATED]:
+            self.logger.info(
+                "Logging request and result",
+                extra={
+                    "request": {
+                        "method": method,
+                        "url": full_url,
+                        "data": data,
+                    },
+                    "result": result.text,
+                },
+            )
+            if method in ["POST", "PUT", "DELETE"]:
+                if result.status_code in [
+                    HTTPStatus.OK,
+                    HTTPStatus.NO_CONTENT,
+                    HTTPStatus.CREATED,
+                ]:
                     success = True
                 elif result.status_code == HTTPStatus.UNAUTHORIZED and retry_count <= 1:
                     self.get_new_token_from_hubspot(self.refresh_token)
                     retry_count += 1
                     # and loop to retry
                 else:
-                    errorjson = {'url': url, 'result': result, 'content': result.content}
-                    raise DetailedValueError('Hubspot call returned HTTP code ' + str(result.status_code), errorjson)
-            elif method in ['GET']:
+                    errorjson = {
+                        "url": url,
+                        "result": result,
+                        "content": result.content,
+                    }
+                    raise DetailedValueError(
+                        "Hubspot call returned HTTP code " + str(result.status_code),
+                        errorjson,
+                    )
+            elif method in ["GET"]:
                 if result.status_code in [HTTPStatus.NOT_FOUND]:
-                    self.logger.warning(f'Content not found; returning None',
-                                        extra={'result.status_code': result.status_code, 'result.content': result.content})
+                    self.logger.warning(
+                        f"Content not found; returning None",
+                        extra={
+                            "result.status_code": result.status_code,
+                            "result.content": result.content,
+                        },
+                    )
                     return None
                 else:
                     result = result.json()
                 success = True
             else:
-                raise DetailedValueError(f'Support for method {method} not implemented in {__file__}')
+                raise DetailedValueError(
+                    f"Support for method {method} not implemented in {__file__}"
+                )
 
         return result
 
     def get(self, url):
-        return self.hubspot_token_request('GET', url)
+        return self.hubspot_token_request("GET", url)
 
     def post(self, url: str, data: dict):
-        return self.hubspot_token_request('POST', url, data=data)
+        return self.hubspot_token_request("POST", url, data=data)
 
     def put(self, url: str, data: dict):
-        return self.hubspot_token_request('PUT', url, data=data)
+        return self.hubspot_token_request("PUT", url, data=data)
 
     def delete(self, url):
-        return self.hubspot_token_request('DELETE', url)
+        return self.hubspot_token_request("DELETE", url)
+
     # endregion
 
     # region hubspot developer get/post/put/delete methods - used for managing TLE definitions
@@ -293,16 +359,17 @@ class HubSpotClient:
         This is necessary for creating TLE types
         """
         from local.secrets import HUBSPOT_DEVELOPER_APIKEY, HUBSPOT_DEVELOPER_USERID
+
         if self.app_id is None:
             self.get_hubspot_connection_secret()
         full_url = BASE_URL + url
         params = {
-            'hapikey': HUBSPOT_DEVELOPER_APIKEY,
-            'userId': HUBSPOT_DEVELOPER_USERID,
-            'application-id': self.app_id,
+            "hapikey": HUBSPOT_DEVELOPER_APIKEY,
+            "userId": HUBSPOT_DEVELOPER_USERID,
+            "application-id": self.app_id,
         }
         headers = {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
         }
 
         result = requests.request(
@@ -312,64 +379,74 @@ class HubSpotClient:
             headers=headers,
             data=json.dumps(data),
         )
-        self.logger.info('Logging request and result',
-                         extra={
-                             'request': {
-                                 'method': method,
-                                 'url': full_url,
-                                 'data': data,
-                             },
-                             'result': result.text
-                         })
-        if method in ['POST', 'PUT', 'DELETE']:
-            if result.status_code not in [HTTPStatus.OK, HTTPStatus.NO_CONTENT, HTTPStatus.CREATED]:
-                errorjson = {
-                    'url': url,
-                    'result': result,
-                    'content': result.content
-                }
-                raise DetailedValueError('Hubspot API call returned HTTP code ' + str(result.status_code), errorjson)
-        elif method in ['GET']:
+        self.logger.info(
+            "Logging request and result",
+            extra={
+                "request": {
+                    "method": method,
+                    "url": full_url,
+                    "data": data,
+                },
+                "result": result.text,
+            },
+        )
+        if method in ["POST", "PUT", "DELETE"]:
+            if result.status_code not in [
+                HTTPStatus.OK,
+                HTTPStatus.NO_CONTENT,
+                HTTPStatus.CREATED,
+            ]:
+                errorjson = {"url": url, "result": result, "content": result.content}
+                raise DetailedValueError(
+                    "Hubspot API call returned HTTP code " + str(result.status_code),
+                    errorjson,
+                )
+        elif method in ["GET"]:
             if result.status_code in [HTTPStatus.NOT_FOUND]:
-                self.logger.warning(f'Content not found; returning None',
-                                    extra={
-                                        'result.status_code': result.status_code,
-                                        'result.content': result.content
-                                    })
+                self.logger.warning(
+                    f"Content not found; returning None",
+                    extra={
+                        "result.status_code": result.status_code,
+                        "result.content": result.content,
+                    },
+                )
                 return None
             else:
                 result = result.json()
         else:
-            raise DetailedValueError(f'Support for method {method} not implemented in {__file__}')
+            raise DetailedValueError(
+                f"Support for method {method} not implemented in {__file__}"
+            )
 
         return result
 
     def developer_get(self, url: str):
-        return self.hubspot_dev_request('GET', url)
+        return self.hubspot_dev_request("GET", url)
 
     def developer_post(self, url: str, data: dict):
-        return self.hubspot_dev_request('POST', url, data=data)
+        return self.hubspot_dev_request("POST", url, data=data)
 
     def developer_delete(self, url: str):
-        return self.hubspot_dev_request('DELETE', url)
+        return self.hubspot_dev_request("DELETE", url)
+
     # endregion
 
     # region Contacts API methods
     def get_hubspot_contacts(self):
-        url = f'{CONTACTS_ENDPOINT}/lists/all/contacts/all'
+        url = f"{CONTACTS_ENDPOINT}/lists/all/contacts/all"
         return self.get(url)
 
     def get_hubspot_contact_by_id(self, id_):
-        url = f'{CONTACTS_ENDPOINT}/contact/vid/{id_}/profile'
+        url = f"{CONTACTS_ENDPOINT}/contact/vid/{id_}/profile"
         return self.get(url)
 
     def get_hubspot_contact_by_email(self, email: str):
-        url = f'{CONTACTS_ENDPOINT}/contact/email/{email}/profile'
+        url = f"{CONTACTS_ENDPOINT}/contact/email/{email}/profile"
         return self.get(url)
 
     @staticmethod
     def get_contact_property(contact, property_name):
-        return contact['properties'][property_name]['value']
+        return contact["properties"][property_name]["value"]
 
     @hubspot_api_error_handler
     def update_contact_core(self, url, property_changes):
@@ -378,34 +455,34 @@ class HubSpotClient:
         return r.status_code
 
     def update_contact_by_email(self, email: str, property_changes: list):
-        url = f'{CONTACTS_ENDPOINT}/contact/email/{email}/profile'
+        url = f"{CONTACTS_ENDPOINT}/contact/email/{email}/profile"
         return self.update_contact_core(url, property_changes)
 
     def update_contact_by_id(self, hubspot_id, property_changes: list):
-        url = f'{CONTACTS_ENDPOINT}/contact/vid/{hubspot_id}/profile'
+        url = f"{CONTACTS_ENDPOINT}/contact/vid/{hubspot_id}/profile"
         return self.update_contact_core(url, property_changes)
 
     def delete_hubspot_contact(self, id_):
-        url = f'{CONTACTS_ENDPOINT}/contact/vid/{id_}'
+        url = f"{CONTACTS_ENDPOINT}/contact/vid/{id_}"
         return self.delete(url)
+
     # endregion
 
-    #region Timeline event types
+    # region Timeline event types
     def list_timeline_event_types(self):
         """
         https://developers.hubspot.com/docs/methods/timeline/get-event-types
         """
         self.set_app_id()
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types'
+        url = f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types"
         return self.developer_get(url)
-
 
     @staticmethod
     def get_timeline_event_type_id(name: str, correlation_id):
         table_id = get_aws_namespace() + name
         ddb = ddb_utils.Dynamodb()
-        item = ddb.get_item('lookups', table_id, correlation_id)
-        return item['details']['hubspot_id']
+        item = ddb.get_item("lookups", table_id, correlation_id)
+        return item["details"]["hubspot_id"]
 
     def set_app_id(self):
         """
@@ -415,7 +492,7 @@ class HubSpotClient:
             self.get_hubspot_connection_secret()
 
     def get_timeline_event_type_properties(self, tle_type_id):
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}/properties'
+        url = f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}/properties"
         result = self.developer_get(url)
         return result
 
@@ -430,15 +507,15 @@ class HubSpotClient:
             content['id'] (int): ID of created timeline event type
         """
         self.set_app_id()
-        type_defn['applicationId'] = self.app_id
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types'
+        type_defn["applicationId"] = self.app_id
+        url = f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types"
         response = self.developer_post(url, type_defn)
         content = json.loads(response.content)
-        return content['id']
+        return content["id"]
 
     def create_timeline_event_type_properties(self, tle_type_id, property_defns: list):
         self.set_app_id()
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}/properties'
+        url = f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}/properties"
         results = list()
         for property_defn in property_defns:
             results.append(self.developer_post(url, property_defn))
@@ -456,7 +533,7 @@ class HubSpotClient:
             Status code returned by API call
         """
         self.set_app_id()
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}/properties/{property_id}'
+        url = f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}/properties/{property_id}"
         result = self.developer_delete(url)
         return result.status_code
 
@@ -471,24 +548,28 @@ class HubSpotClient:
             Status code of delete request: Returns a 204 No Content response on success
         """
         self.set_app_id()
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}'
+        url = (
+            f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event-types/{tle_type_id}"
+        )
         result = self.developer_delete(url)
         return result.status_code
+
     # endregion
 
     # region Timeline event instances
     def get_timeline_event(self, tle_type_id, tle_id):
         self.set_app_id()
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event/{tle_type_id}/{tle_id}'
+        url = f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event/{tle_type_id}/{tle_id}"
         result = self.get(url)
         return result
 
     @hubspot_api_error_handler
     def create_or_update_timeline_event(self, event_data: dict):
         self.set_app_id()
-        url = f'{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event'
+        url = f"{INTEGRATIONS_ENDPOINT}/{self.app_id}/timeline/event"
         result = self.put(url, event_data)
         return result.status_code
+
     # endregion
 
     # region thiscovery functionality
@@ -505,20 +586,20 @@ class HubSpotClient:
             test_hubspot.test_01_create_contact_ok
 
         """
-        email = new_user['email']
+        email = new_user["email"]
 
-        url = '/contacts/v1/contact/createOrUpdate/email/' + email
+        url = "/contacts/v1/contact/createOrUpdate/email/" + email
 
-        created_timestamp = hubspot_timestamp(new_user['created'])
+        created_timestamp = hubspot_timestamp(new_user["created"])
 
         data = {
             "properties": [
                 {"property": "email", "value": email},
-                {"property": "firstname", "value": new_user['first_name']},
-                {"property": "lastname", "value": new_user['last_name']},
-                {"property": "thiscovery_id", "value": new_user['id']},
+                {"property": "firstname", "value": new_user["first_name"]},
+                {"property": "lastname", "value": new_user["last_name"]},
+                {"property": "thiscovery_id", "value": new_user["id"]},
                 {"property": "thiscovery_registered_date", "value": created_timestamp},
-                {"property": "country", "value": new_user['country_name']},
+                {"property": "country", "value": new_user["country_name"]},
             ]
         }
 
@@ -526,51 +607,54 @@ class HubSpotClient:
 
         if result.status_code == HTTPStatus.OK:
 
-            content_str = result.content.decode('utf-8')
+            content_str = result.content.decode("utf-8")
             content = json.loads(content_str)
-            vid = content['vid']
-            is_new = content['isNew']
+            vid = content["vid"]
+            is_new = content["isNew"]
             return vid, is_new
 
         else:
             return -1, False
 
     def post_task_signup_to_crm(self, signup_details):
-        tle_type_id = self.get_timeline_event_type_id(TASK_SIGNUP_TLE_TYPE_NAME, self.correlation_id)
+        tle_type_id = self.get_timeline_event_type_id(
+            TASK_SIGNUP_TLE_TYPE_NAME, self.correlation_id
+        )
         tle_details = {
-            'id': signup_details['id'],
-            'objectId': signup_details['crm_id'],
-            'eventTypeId': tle_type_id,
-            'project_id': signup_details['project_id'],
-            'project_name': signup_details['project_name'],
-            'task_id': signup_details['task_id'],
-            'task_name': signup_details['task_name'],
-            'task_type_id': signup_details['task_type_id'],
-            'task_type_name': signup_details['task_type_name'],
-            'signup_event_type': signup_details['signup_event_type'],
-            'timestamp': hubspot_timestamp(signup_details['created'])
+            "id": signup_details["id"],
+            "objectId": signup_details["crm_id"],
+            "eventTypeId": tle_type_id,
+            "project_id": signup_details["project_id"],
+            "project_name": signup_details["project_name"],
+            "task_id": signup_details["task_id"],
+            "task_name": signup_details["task_name"],
+            "task_type_id": signup_details["task_type_id"],
+            "task_type_name": signup_details["task_type_name"],
+            "signup_event_type": signup_details["signup_event_type"],
+            "timestamp": hubspot_timestamp(signup_details["created"]),
         }
 
         return self.create_or_update_timeline_event(tle_details)
 
     def post_user_login_to_crm(self, login_details):
-        user_email = login_details['email']
-        login_time_str = login_details['login_datetime']
+        user_email = login_details["email"]
+        login_time_str = login_details["login_datetime"]
         login_timestamp = hubspot_timestamp(login_time_str)
-        property_name = 'thiscovery_last_login_date'
+        property_name = "thiscovery_last_login_date"
         changes = [
             {"property": property_name, "value": int(login_timestamp)},
         ]
         return self.update_contact_by_email(user_email, changes)
+
     # endregion
 
 
 class SingleSendClient(HubSpotClient):
-    token_item_id = 'hubspot-emails'
-    expired_token_item_id = 'hubspot-emails-expired'
-    app_id_secret_name = 'emails-app-id'
-    client_id_secret_name = 'emails-client-id'
-    client_secret_name = 'emails-client-secret'
+    token_item_id = "hubspot-emails"
+    expired_token_item_id = "hubspot-emails-expired"
+    app_id_secret_name = "emails-app-id"
+    client_id_secret_name = "emails-client-id"
+    client_secret_name = "emails-client-secret"
 
     def send_email(self, template_id, message, **kwargs):
         """
@@ -585,14 +669,11 @@ class SingleSendClient(HubSpotClient):
 
         """
         data = {
-            'emailId': template_id,
-            'message': message,
+            "emailId": template_id,
+            "message": message,
         }
         data.update(**kwargs)
-        return self.post(
-            url='/email/public/v1/singleEmail/send',
-            data=data
-        )
+        return self.post(url="/email/public/v1/singleEmail/send", data=data)
 
 
 # region hubspot timestamp methods
@@ -600,14 +681,16 @@ def hubspot_timestamp(datetime_string: str):
     # strip milliseconds and timezone
     datetime_string = datetime_string[:19]
     # date string may contain 'T' - if so then replace with space
-    datetime_string = datetime_string.replace('T', ' ')
+    datetime_string = datetime_string.replace("T", " ")
     datetime_value = datetime.strptime(datetime_string, DATE_FORMAT)
     datetime_timestamp = int(datetime_value.timestamp() * 1000)
     return datetime_timestamp
 
 
 def hubspot_timestamp_to_datetime(hubspot_timestamp):
-    timestamp = int(hubspot_timestamp)/1000
+    timestamp = int(hubspot_timestamp) / 1000
     dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
     return dt
+
+
 # endregion

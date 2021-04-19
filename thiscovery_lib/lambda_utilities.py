@@ -21,40 +21,47 @@ import thiscovery_lib.utilities as utils
 
 
 class Lambda(utils.BaseClient):
-
-    def __init__(self, stack_name='thiscovery-core', correlation_id=None):
-        super().__init__('lambda', correlation_id=correlation_id)
+    def __init__(self, stack_name="thiscovery-core", correlation_id=None):
+        super().__init__("lambda", correlation_id=correlation_id)
         super().get_namespace()
         self.stack_name = stack_name
 
-    def invoke(self, function_name, function_name_verbatim=False, invocation_type='RequestResponse', payload=dict()):
+    def invoke(
+        self,
+        function_name,
+        function_name_verbatim=False,
+        invocation_type="RequestResponse",
+        payload=dict(),
+    ):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html#Lambda.Client.invoke
         """
-        payload = {'correlation_id': self.correlation_id, **payload}
+        payload = {"correlation_id": self.correlation_id, **payload}
         if function_name_verbatim:
             full_name = function_name
         else:
-            full_name = '-'.join([self.stack_name, self.aws_namespace, function_name])
+            full_name = "-".join([self.stack_name, self.aws_namespace, function_name])
 
         response = self.client.invoke(
             FunctionName=full_name,
             InvocationType=invocation_type,
-            LogType='Tail',
-            Payload=json.dumps(payload).encode('utf-8'),
+            LogType="Tail",
+            Payload=json.dumps(payload).encode("utf-8"),
         )
         try:
-            log_result_str = base64.b64decode(response['LogResult']).decode('utf-8')
+            log_result_str = base64.b64decode(response["LogResult"]).decode("utf-8")
         except KeyError:
-            response['LogResult'] = 'None'
+            response["LogResult"] = "None"
         else:
-            log_result_list = log_result_str.split('\n')
-            log_result = [json.loads(x.split(';1m')[1]) for x in log_result_list if ';1m' in x]
-            response['LogResult'] = log_result
+            log_result_list = log_result_str.split("\n")
+            log_result = [
+                json.loads(x.split(";1m")[1]) for x in log_result_list if ";1m" in x
+            ]
+            response["LogResult"] = log_result
         try:
-            response['Payload'] = json.loads(response['Payload'].read().decode('utf-8'))
+            response["Payload"] = json.loads(response["Payload"].read().decode("utf-8"))
         except json.decoder.JSONDecodeError:
-            response['Payload'] = 'None'
+            response["Payload"] = "None"
         return response
 
     def list_functions(self):
@@ -65,8 +72,10 @@ class Lambda(utils.BaseClient):
         Returns:
         """
         funcs = list()
-        paginator = self.client.get_paginator('list_functions')
+        paginator = self.client.get_paginator("list_functions")
         for response in paginator.paginate():
-            assert response['ResponseMetadata']['HTTPStatusCode'] == 200, f'call to boto3.client.list_functions failed with response: {response}'
-            funcs += response['Functions']
+            assert (
+                response["ResponseMetadata"]["HTTPStatusCode"] == 200
+            ), f"call to boto3.client.list_functions failed with response: {response}"
+            funcs += response["Functions"]
         return funcs

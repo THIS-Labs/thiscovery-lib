@@ -29,33 +29,32 @@ class TestClass(EntityBase):
 
 
 class TestEntityBase(BaseTestCase):
-
     def test_01_entity_create_from_json_basic(self):
         ug = TestClass()
         ug_dict = ug.to_dict()
 
         self.new_uuid_test_and_remove(ug_dict)
-        self.now_datetime_test_and_remove(ug_dict, 'created')
-        self.now_datetime_test_and_remove(ug_dict, 'modified')
+        self.now_datetime_test_and_remove(ug_dict, "created")
+        self.now_datetime_test_and_remove(ug_dict, "modified")
 
     def test_02_entity_create_from_json_with_id(self):
         entity_json = {
-            'id': '9207bdab-58c1-46a4-9562-b125766ffd23',
+            "id": "9207bdab-58c1-46a4-9562-b125766ffd23",
         }
 
         ug = TestClass(entity_json)
         ug_dict = ug.to_dict()
 
-        self.now_datetime_test_and_remove(ug_dict, 'created')
-        self.now_datetime_test_and_remove(ug_dict, 'modified')
+        self.now_datetime_test_and_remove(ug_dict, "created")
+        self.now_datetime_test_and_remove(ug_dict, "modified")
 
         self.assertDictEqual(entity_json, ug_dict)
 
     def test_03_entity_create_from_json_full(self):
         entity_json = {
-            'id': 'c2ea7902-8bfb-4220-b782-8a19a0ca9fb4',
-            'created': '2018-08-21 11:16:56+01:00',
-            'modified': '2019-05-21 11:10:34+01:00',
+            "id": "c2ea7902-8bfb-4220-b782-8a19a0ca9fb4",
+            "created": "2018-08-21 11:16:56+01:00",
+            "modified": "2019-05-21 11:10:34+01:00",
         }
         ug = TestClass(entity_json)
         ug_dict = ug.to_dict()
@@ -64,7 +63,7 @@ class TestEntityBase(BaseTestCase):
 
     def test_04_entity_create_from_json_bad_id(self):
         entity_json = {
-            'id': 'this is not a uuid',
+            "id": "this is not a uuid",
         }
 
         with self.assertRaises(DetailedValueError):
@@ -72,7 +71,7 @@ class TestEntityBase(BaseTestCase):
 
     def test_05_entity_create_from_json_bad_date(self):
         entity_json = {
-            'created': 'this is not a date',
+            "created": "this is not a date",
         }
 
         with self.assertRaises(DetailedValueError):
@@ -80,9 +79,9 @@ class TestEntityBase(BaseTestCase):
 
     def test_06_entity_to_json(self):
         entity_json = {
-            'id': 'c2ea7902-8bfb-4220-b782-8a19a0ca9fb4',
-            'created': '2018-08-21 11:16:56+01:00',
-            'modified': '2019-05-21 11:10:34+01:00',
+            "id": "c2ea7902-8bfb-4220-b782-8a19a0ca9fb4",
+            "created": "2018-08-21 11:16:56+01:00",
+            "modified": "2019-05-21 11:10:34+01:00",
         }
         ug = TestClass(entity_json)
         ug_json = ug.to_json()

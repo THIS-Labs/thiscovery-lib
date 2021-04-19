@@ -23,12 +23,11 @@ import thiscovery_lib.utilities as utils
 
 
 class InterviewsApiClient(tau.ThiscoveryApiClient):
-
     def __init__(self, env_override=None, correlation_id=None):
         super(InterviewsApiClient, self).__init__(
             correlation_id=correlation_id,
             env_override=env_override,
-            api_prefix='interviews',
+            api_prefix="interviews",
         )
 
     @tau.check_response(HTTPStatus.OK)
@@ -40,14 +39,14 @@ class InterviewsApiClient(tau.ThiscoveryApiClient):
         Returns:
         """
         body = {
-            'type_ids': appointment_type_ids,
+            "type_ids": appointment_type_ids,
         }
-        self.logger.debug("Calling interviews API appointments-by-type endpoint", extra={
-            'body': body
-        })
+        self.logger.debug(
+            "Calling interviews API appointments-by-type endpoint", extra={"body": body}
+        )
         return utils.aws_request(
-            method='GET',
-            endpoint_url='v1/appointments-by-type',
+            method="GET",
+            endpoint_url="v1/appointments-by-type",
             base_url=self.base_url,
             data=json.dumps(body),
         )
@@ -55,16 +54,18 @@ class InterviewsApiClient(tau.ThiscoveryApiClient):
     @tau.check_response(HTTPStatus.OK, HTTPStatus.METHOD_NOT_ALLOWED)
     def set_interview_url(self, appointment_id, interview_url, event_type, **kwargs):
         body = {
-            'appointment_id': appointment_id,
-            'interview_url': interview_url,
-            'event_type': event_type,
-            'correlation_id': self.correlation_id,
+            "appointment_id": appointment_id,
+            "interview_url": interview_url,
+            "event_type": event_type,
+            "correlation_id": self.correlation_id,
             **kwargs,
         }
-        self.logger.debug("Calling interviews API set-interview-url endpoint", extra={'body': body})
+        self.logger.debug(
+            "Calling interviews API set-interview-url endpoint", extra={"body": body}
+        )
         return utils.aws_request(
-            method='PUT',
-            endpoint_url='v1/set-interview-url',
+            method="PUT",
+            endpoint_url="v1/set-interview-url",
             base_url=self.base_url,
             data=json.dumps(body),
         )

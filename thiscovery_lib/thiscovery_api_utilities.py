@@ -23,20 +23,19 @@ import thiscovery_lib.utilities as utils
 
 
 class ThiscoveryApiClient:
-
-    def __init__(self, correlation_id=None, env_override=None, api_prefix=''):
+    def __init__(self, correlation_id=None, env_override=None, api_prefix=""):
         self.correlation_id = correlation_id
         self.logger = utils.get_logger()
         if api_prefix:
-            api_prefix += '-'
+            api_prefix += "-"
         if env_override:
             env_name = env_override
         else:
             env_name = utils.get_environment_name()
-        if env_name == 'prod':
-            self.base_url = f'https://{api_prefix}api.thiscovery.org/'
+        if env_name == "prod":
+            self.base_url = f"https://{api_prefix}api.thiscovery.org/"
         else:
-            self.base_url = f'https://{env_name}-{api_prefix}api.thiscovery.org/'
+            self.base_url = f"https://{env_name}-{api_prefix}api.thiscovery.org/"
 
 
 def check_response(*expected_status_codes):
@@ -44,11 +43,14 @@ def check_response(*expected_status_codes):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             response = func(*args, **kwargs)
-            assert response['statusCode'] in expected_status_codes, \
-                f'API call initiated by {func.__module__}.{func.__name__} ' \
-                f'returned error: {response}'
+            assert response["statusCode"] in expected_status_codes, (
+                f"API call initiated by {func.__module__}.{func.__name__} "
+                f"returned error: {response}"
+            )
             return response
+
         return wrapper
+
     return decorator
 
 
@@ -56,6 +58,6 @@ def process_response(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
-        return json.loads(response['body'])
-    return wrapper
+        return json.loads(response["body"])
 
+    return wrapper
