@@ -206,7 +206,13 @@ class DistributionsClient(BaseClient):
         params = {
             "surveyId": survey_id,
         }
-        return self.qualtrics_request("GET", endpoint, params=params)
+        result = self.qualtrics_request("GET", endpoint, params=params)
+
+        # workaround to fix invalid links; contacted Qualtrics about this; removed when issue is solved
+        for r in result["result"]["elements"]:
+            r["link"] = r["link"].replace("qualtrics.com//jfe", "qualtrics.com/jfe")
+
+        return result
 
     def delete_distribution(self, distribution_id):
         """
