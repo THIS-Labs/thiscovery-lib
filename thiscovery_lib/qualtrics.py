@@ -260,5 +260,51 @@ class ResponsesClient(BaseClient):
         return response
 
 
+class DirectoriesClient(BaseClient):
+    def __init__(self, qualtrics_account_name="cambridge", correlation_id=None):
+        """
+        Args:
+            qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
+            correlation_id:
+        """
+        super().__init__(
+            qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id
+        )
+        self.base_endpoint = f"{self.base_url}/v3/directories"
+
+    def list_directories(self):
+        return self.qualtrics_request("GET", self.base_endpoint)
+
+
+class MailingListsClient(BaseClient):
+    def __init__(
+        self, qualtrics_account_name="cambridge", directory_id=None, correlation_id=None
+    ):
+        """
+        Args:
+            qualtrics_account_name: defaults to UIS account; alternative value is thisinstitute
+            correlation_id:
+        """
+        super().__init__(
+            qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id
+        )
+        self.base_endpoint = (
+            f"{self.base_url}/v3/directories/{directory_id}/mailinglists"
+        )
+
+    def list_mailing_lists(self):
+        return self.qualtrics_request("GET", self.base_endpoint)
+
+    def create_mailing_list(self, name, owner_id):
+        return self.qualtrics_request(
+            "POST",
+            self.base_endpoint,
+            data={
+                "name": name,
+                "ownerId": owner_id,
+            },
+        )
+
+
 def qualtrics2thiscovery_timestamp(qualtrics_datetime_string):
     return str(parser.parse(qualtrics_datetime_string))
