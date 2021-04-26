@@ -34,6 +34,7 @@ from dateutil import parser, tz
 from http import HTTPStatus
 from pythonjsonlogger import jsonlogger
 from timeit import default_timer as timer
+from urllib.parse import quote_plus
 
 
 # region constants
@@ -637,7 +638,7 @@ def get_environment_name():
     return namespace[1:-1]
 
 
-# this belongs in user_task class as a property - moved here to avoid circular includes
+# this belongs in user_task class as a property - moved here to avoid circular imports
 def create_anonymous_url_params(
     base_url,
     anon_project_specific_user_id,
@@ -651,7 +652,7 @@ def create_anonymous_url_params(
     assert project_task_id, "project_task_id is null"
     params = (
         f"?anon_project_specific_user_id={anon_project_specific_user_id}"
-        f"&first_name={user_first_name}"
+        f"&first_name={quote_plus(user_first_name)}"
         f"&anon_user_task_id={anon_user_task_id}"
         f"&project_task_id={project_task_id}"
     )
@@ -665,9 +666,7 @@ def create_anonymous_url_params(
 def create_url_params(
     base_url, user_id, user_first_name, user_task_id, external_task_id=None
 ):
-    params = (
-        f"?user_id={user_id}&first_name={user_first_name}&user_task_id={user_task_id}"
-    )
+    params = f"?user_id={user_id}&first_name={quote_plus(user_first_name)}&user_task_id={user_task_id}"
     if "?" in base_url:
         params = f"&{params[1:]}"
     if external_task_id is not None:
