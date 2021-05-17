@@ -24,6 +24,7 @@ import thiscovery_lib.utilities as utils
 class EventbridgeClient(utils.BaseClient):
     def __init__(self, profile_name=None):
         super().__init__("events", profile_name=profile_name)
+        self.logger = utils.get_logger()
 
     def put_event(self, thiscovery_event, event_bus_name="thiscovery-event-bus"):
         """
@@ -45,6 +46,12 @@ class EventbridgeClient(utils.BaseClient):
                 "EventBusName": event_bus_name,
             }
         ]
+        self.logger.debug(
+            "Putting event",
+            extra={
+                "entries": entries,
+            },
+        )
         return self.client.put_events(Entries=entries)
 
 
