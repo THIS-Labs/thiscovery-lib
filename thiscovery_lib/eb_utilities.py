@@ -75,6 +75,10 @@ class ThiscoveryEvent:
         except KeyError:
             raise utils.DetailedValueError("mandatory detail data not provided", dict())
 
+        assert isinstance(
+            detail, dict
+        ), f"detail ({detail}) must be a dictionary, not {type(detail)}"
+
         self.detail = json.dumps(detail)
         # todo - validate type
         self.event_source = event.get("event_source", "thiscovery")
