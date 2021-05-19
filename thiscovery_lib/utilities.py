@@ -639,49 +639,6 @@ def get_environment_name():
     return namespace[1:-1]
 
 
-# this belongs in user_task class as a property - moved here to avoid circular imports
-def create_anonymous_url_params(
-    base_url,
-    anon_project_specific_user_id,
-    user_first_name,
-    anon_user_task_id,
-    external_task_id,
-    project_task_id,
-):
-    assert anon_project_specific_user_id, "anon_project_specific_user_id is null"
-    assert anon_user_task_id, "anon_user_task_id is null"
-    assert project_task_id, "project_task_id is null"
-    params = (
-        f"?anon_project_specific_user_id={anon_project_specific_user_id}"
-        f"&first_name={quote_plus(user_first_name)}"
-        f"&anon_user_task_id={anon_user_task_id}"
-        f"&project_task_id={project_task_id}"
-    )
-    if "?" in base_url:
-        params = f"&{params[1:]}"
-    if external_task_id is not None:
-        params += f"&external_task_id={external_task_id}"
-    return params
-
-
-def create_url_params(
-    base_url, user_id, user_first_name, user_task_id, external_task_id=None
-):
-    params = f"?user_id={user_id}&first_name={quote_plus(user_first_name)}&user_task_id={user_task_id}"
-    if "?" in base_url:
-        params = f"&{params[1:]}"
-    if external_task_id is not None:
-        params += f"&external_task_id={str(external_task_id)}"
-    return params
-
-
-def non_prod_env_url_param(target_env="prod"):
-    if get_environment_name() == target_env:
-        return ""
-    else:
-        return "&env=" + get_environment_name()
-
-
 def get_secret(secret_name, namespace_override=None):
     logger = get_logger()
     # need to prepend secret name with namespace...
@@ -744,43 +701,6 @@ def get_secret(secret_name, namespace_override=None):
         secret = json.loads(secret)
     finally:
         return secret
-
-
-# endregion
-
-
-# region Country code/name processing
-def append_country_name_to_list(entity_list):
-    for entity in entity_list:
-        append_country_name(entity)
-    return entity_list
-
-
-def append_country_name(entity):
-    country_code = entity["country_code"]
-    entity["country_name"] = get_country_name(country_code)
-
-
-def load_countries():
-    country_list_filename = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "countries.json"
-    )
-    country_list = json.loads(get_file_as_string(country_list_filename))
-    countries_dict = {}
-    for country in country_list:
-        countries_dict[country["Code"]] = country["Name"]
-    return countries_dict
-
-
-def get_country_name(country_code):
-    try:
-        return countries[country_code]
-    except KeyError as err:
-        errorjson = {"country_code": country_code}
-        raise DetailedValueError("invalid country code", errorjson)
-
-
-countries = load_countries()
 
 
 # endregion
