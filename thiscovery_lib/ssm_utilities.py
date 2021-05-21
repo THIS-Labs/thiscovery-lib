@@ -17,12 +17,15 @@
 #
 from __future__ import annotations
 import thiscovery_lib.utilities as utils
+import aws_api_utilities as aau
+from http import HTTPStatus
 
 
 class SsmClient(utils.BaseClient):
     def __init__(self):
         super().__init__("ssm")
 
+    @aau.check_response(HTTPStatus.OK)
     def get_parameter(self, name: str) -> dict[str, dict]:
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameter
