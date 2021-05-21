@@ -17,7 +17,7 @@
 #
 from __future__ import annotations
 import thiscovery_lib.utilities as utils
-import aws_api_utilities as aau
+import thiscovery_lib.aws_api_utilities as aau
 from http import HTTPStatus
 
 
