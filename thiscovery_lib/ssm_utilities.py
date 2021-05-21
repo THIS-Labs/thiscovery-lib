@@ -23,6 +23,17 @@ class SsmClient(utils.BaseClient):
     def __init__(self):
         super().__init__("ssm")
 
+    def get_parameter(self, name: str) -> dict[str, dict]:
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameter
+
+        Args:
+            name (str): Name of the parameters for which you want to query information
+
+        Returns:
+        """
+        return self.client.get_parameter(Name=name)
+
     def get_parameters(self, names: list) -> dict[str, list]:
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameters
