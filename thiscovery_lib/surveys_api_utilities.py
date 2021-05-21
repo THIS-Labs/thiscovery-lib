@@ -61,7 +61,7 @@ class SurveysApiClient(tau.ThiscoveryApiClient):
         )
 
     @tau.process_response
-    @tau.check_response(HTTPStatus.OK)
+    @tau.check_response(HTTPStatus.OK, HTTPStatus.NOT_FOUND)
     def get_user_interview_tasks(self, anon_user_task_id):
         return utils.aws_get(
             endpoint_url="v1/user-interview-tasks",
