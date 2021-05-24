@@ -81,7 +81,7 @@ class ThiscoveryEvent:
 
         self.detail = json.dumps(detail)
         # todo - validate type
-        self.event_source = event.get("event_source", "thiscovery")
+        self.event_source = event.get("source", "thiscovery")
         self.event_time = event.get("event_time", str(utils.now_with_tz()))
 
     def put_event(self):
