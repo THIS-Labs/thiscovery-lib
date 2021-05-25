@@ -35,7 +35,7 @@ class SsmClient(utils.BaseClient):
 
         Returns:
         """
-        return self.client.get_parameter(Name=name)
+        return self.client.get_parameter(Name=f"{utils.get_aws_namespace()}{name}")
 
     def get_parameters(self, names: list) -> dict[str, list]:
         """
@@ -46,4 +46,7 @@ class SsmClient(utils.BaseClient):
 
         Returns:
         """
-        return self.client.get_parameters(Names=names)
+        namespace = utils.get_aws_namespace()
+        return self.client.get_parameters(
+            Names=[f"{namespace}{name}" for name in names]
+        )
