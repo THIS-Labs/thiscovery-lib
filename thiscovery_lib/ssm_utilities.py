@@ -16,8 +16,8 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 from __future__ import annotations
+import json
 import thiscovery_lib.utilities as utils
-import thiscovery_lib.aws_api_utilities as aau
 from http import HTTPStatus
 
 
@@ -25,7 +25,6 @@ class SsmClient(utils.BaseClient):
     def __init__(self):
         super().__init__("ssm")
 
-    @aau.check_response(HTTPStatus.OK)
     def get_parameter(self, name: str) -> dict[str, dict]:
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameter
@@ -35,7 +34,11 @@ class SsmClient(utils.BaseClient):
 
         Returns:
         """
-        return self.client.get_parameter(Name=f"{utils.get_aws_namespace()}{name}")
+        response = self.client.get_parameter(Name=f"{utils.get_aws_namespace()}{name}")
+        assert (
+            response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        ), f"Call to SSM client failed with response: {response}"
+        return json.loads(response["Parameter"]["Value"])
 
     def get_parameters(self, names: list) -> dict[str, list]:
         """
