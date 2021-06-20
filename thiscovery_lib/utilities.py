@@ -530,24 +530,8 @@ class ColorHandler(logging.StreamHandler):
 
 
 class EpsagonHandler(logging.Handler):
-    def __init__(self):
-        super().__init__()
-        try:
-            self.running_tests = get_secret("runtime-parameters")["running-tests"]
-        except TypeError:  # get_secret('runtime-parameters') is None
-            self.running_tests = "false"
-
     def emit(self, exception_instance):
-        if (self.running_tests == "false") or (
-            get_aws_namespace() in [PRODUCTION_NAMESPACE, STAGING_NAMESPACE]
-        ):
-            epsagon.error(exception_instance)
-        elif self.running_tests == "true":
-            pass
-        else:
-            raise AttributeError(
-                f'Secret runtime-parameters.running-tests is neither "true" nor "false": {self.running_tests}'
-            )
+        epsagon.error(exception_instance)
 
 
 logger = None
