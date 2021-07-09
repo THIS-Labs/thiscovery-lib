@@ -39,10 +39,14 @@ class CoreApiClient(tau.ThiscoveryApiClient):
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
+    def _get_userprojects(self, **params):
+        return utils.aws_get("v1/userproject", self.base_url, params=params)
+
     def get_userprojects(self, user_id):
-        return utils.aws_get(
-            "v1/userproject", self.base_url, params={"user_id": user_id}
-        )
+        return self._get_userprojects(user_id=user_id)
+
+    def get_userprojects_from_anon_user_task_id(self, anon_user_task_id):
+        return self._get_userprojects(anon_user_task_id=anon_user_task_id)
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
