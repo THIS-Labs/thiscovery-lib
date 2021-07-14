@@ -19,6 +19,7 @@ from __future__ import annotations
 import datetime
 import requests
 import thiscovery_lib.utilities as utils
+import warnings
 
 from dateutil import parser
 
@@ -202,6 +203,10 @@ class DistributionsClient(BaseClient):
         """
         https://api.qualtrics.com/api-reference/reference/distributions.json/paths/~1distributions~1%7BdistributionId%7D~1links/get
         """
+        warnings.warn(
+            "This method will be deprecated soon; use list_distribution_links_v2 instead",
+            PendingDeprecationWarning,
+        )
         endpoint = f"{self.base_endpoint}/{distribution_id}/links"
         params = {
             "surveyId": survey_id,
@@ -213,6 +218,39 @@ class DistributionsClient(BaseClient):
             r["link"] = r["link"].replace("qualtrics.com//jfe", "qualtrics.com/jfe")
 
         return result
+
+    def list_distribution_links_v2(self, distribution_id, survey_id):
+        """
+        Extends previous version by dealing with pagination to return more than 100 links
+        https://api.qualtrics.com/api-reference/reference/distributions.json/paths/~1distributions~1%7BdistributionId%7D~1links/get
+        """
+        endpoint = f"{self.base_endpoint}/{distribution_id}/links"
+        params = {
+            "surveyId": survey_id,
+        }
+        elements = list()
+        while True:
+            r = self.qualtrics_request("GET", endpoint, params=params)
+            assert (
+                r["meta"]["httpStatus"] == "200 - OK"
+            ), f"Call to Qualtrics API failed with response: {result}"
+
+            result = r["result"]
+            # workaround to fix invalid links; contacted Qualtrics about this; removed when issue is solved
+            elem = result["elements"]
+            for e in elem:
+                e["link"] = e["link"].replace("qualtrics.com//jfe", "qualtrics.com/jfe")
+
+            elements += elem
+
+            next_page = result.get("nextPage")
+            if next_page:
+                skip_token = next_page.split("skipToken=")[-1]
+                params.update(skipToken=skip_token)
+            else:
+                break
+
+        return elements
 
     def delete_distribution(self, distribution_id):
         """
