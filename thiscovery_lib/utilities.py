@@ -85,6 +85,9 @@ class DetailedValueError(ValueError):
         self.message = message
         self.details = details
 
+    def __str__(self):
+        return f"{self.message}: {json.dumps(self.details)}"
+
     def as_response_body(self):
         try:
             return json.dumps({"message": self.message, **self.details})
