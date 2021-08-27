@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import requests
+import simplejson
 import sys
 import uuid
 import traceback
@@ -86,7 +87,7 @@ class DetailedValueError(ValueError):
         self.details = details
 
     def __str__(self):
-        return f"{self.message}: {json.dumps(self.details)}"
+        return f"{self.message}: {simplejson.dumps(self.details)}"
 
     def as_response_body(self):
         try:
