@@ -17,6 +17,7 @@ setuptools.setup(
         "jsons",
         "python-json-logger",
         "requests",
+        "simplejson",
         "validators",
     ],
     long_description=long_description,
