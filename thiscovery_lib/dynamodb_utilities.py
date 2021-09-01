@@ -381,3 +381,22 @@ class Dynamodb(utils.BaseClient):
                 },
             )
             table.delete_item(Key=key_json)
+
+
+class DdbBaseItem:
+    """
+    Base class representing a Ddb item
+    """
+
+    def __repr__(self):
+        return self.as_dict()
+
+    def as_dict(self):
+        return {
+            k: v
+            for k, v in self.__dict__.items()
+            if (k[0] != "_") and (k not in ["created", "modified"])
+        }
+
+    def from_dict(self, item_dict):
+        self.__dict__.update(item_dict)
