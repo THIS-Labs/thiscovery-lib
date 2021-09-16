@@ -130,6 +130,10 @@ class SurveyDefinitionsClient(BaseClient):
         endpoint = f"{self.questions_endpoint}/{question_id}"
         return self.qualtrics_request("DELETE", endpoint)
 
+    def get_block(self, block_id):
+        endpoint = f"{self.blocks_endpoint}/{block_id}"
+        return self.qualtrics_request("GET", endpoint)
+
     def create_block(self, data):
         return self.qualtrics_request("POST", self.blocks_endpoint, data=data)
 
