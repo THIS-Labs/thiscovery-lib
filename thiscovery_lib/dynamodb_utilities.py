@@ -412,6 +412,14 @@ class DdbBaseTable(metaclass=ABCMeta):
             sort_key_name=self.sort,
         )
 
+    def scan(self, **kwargs):
+        return self._ddb_client.scan(
+            table_name=self.name,
+            filter_attr_name=kwargs.get("filter_attr_name"),
+            filter_attr_values=kwargs.get("filter_attr_values"),
+            table_name_verbatim=kwargs.get("table_name_verbatim", False),
+        )
+
 
 class DdbBaseItem(metaclass=ABCMeta):
     """
