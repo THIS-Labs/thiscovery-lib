@@ -395,7 +395,7 @@ class DdbBaseTable(metaclass=ABCMeta):
     partition = None
     sort = None
 
-    def __init__(self, stack_name="thiscovery-core", correlation_id=None):
+    def __init__(self, stack_name, correlation_id=None):
         assert self.name, f"{self.__class__}.name must be set"
         assert self.partition, f"{self.__class__}.partition must be set"
         self.correlation_id = correlation_id
@@ -418,6 +418,32 @@ class DdbBaseTable(metaclass=ABCMeta):
             filter_attr_name=kwargs.get("filter_attr_name"),
             filter_attr_values=kwargs.get("filter_attr_values"),
             table_name_verbatim=kwargs.get("table_name_verbatim", False),
+        )
+
+    def put_item(self, **kwargs):
+        sort_key = None
+        if self.sort:
+            sort_key = {self.sort: kwargs["sort"]}
+        return self._ddb_client.put_item(
+            table_name=self.name,
+            key=kwargs["partition"],
+            key_name=self.partition,
+            item_type=kwargs.get("item_type", "ddb_item"),
+            item_details=kwargs.get("item_details"),
+            item=kwargs.get("item"),
+            sort_key=sort_key,
+        )
+
+    def update_item(self, **kwargs):
+        sort_key = None
+        if self.sort:
+            sort_key = {self.sort: kwargs["sort"]}
+        return self._ddb_client.update_item(
+            table_name=self.name,
+            key=kwargs["partition"],
+            key_name=self.partition,
+            name_value_pairs=kwargs["name_value_pairs"],
+            sort_key=sort_key,
         )
 
 
