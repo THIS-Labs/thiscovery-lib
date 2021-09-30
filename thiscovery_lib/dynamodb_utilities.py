@@ -421,16 +421,24 @@ class DdbBaseTable(metaclass=ABCMeta):
         )
 
     def put_item(self, **kwargs):
-        sort_key = None
-        if self.sort:
-            sort_key = {self.sort: kwargs["sort"]}
+        """
+        Args:
+            **kwargs: DdbBaseItem.as_dict()
+
+        Returns:
+
+        """
+        key = kwargs.pop(self.partition)
+        sort_key = kwargs.pop(self.sort, None)
+        if sort_key:
+            sort_key = {self.sort: sort_key}
         return self._ddb_client.put_item(
             table_name=self.name,
-            key=kwargs["partition"],
+            key=key,
             key_name=self.partition,
-            item_type=kwargs.get("item_type", "ddb_item"),
+            item_type=kwargs.pop("item_type", "ddb_item"),
             item_details=kwargs.get("item_details"),
-            item=kwargs.get("item"),
+            item=kwargs,
             sort_key=sort_key,
         )
 
@@ -472,3 +480,6 @@ class DdbBaseItem(metaclass=ABCMeta):
 
     def from_dict(self, item_dict):
         self.__dict__.update(item_dict)
+
+    def put(self):
+        return self._table.put_item(**self.as_dict())
