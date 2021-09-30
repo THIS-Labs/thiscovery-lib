@@ -428,6 +428,7 @@ class DdbBaseTable(metaclass=ABCMeta):
         Returns:
 
         """
+        update = kwargs.pop("update", False)
         key = kwargs.pop(self.partition)
         sort_key = kwargs.pop(self.sort, None)
         if sort_key:
@@ -440,6 +441,7 @@ class DdbBaseTable(metaclass=ABCMeta):
             item_details=kwargs.get("item_details"),
             item=kwargs,
             sort_key=sort_key,
+            update_allowed=update,
         )
 
     def update_item(self, **kwargs):
@@ -481,5 +483,9 @@ class DdbBaseItem(metaclass=ABCMeta):
     def from_dict(self, item_dict):
         self.__dict__.update(item_dict)
 
-    def put(self):
-        return self._table.put_item(**self.as_dict())
+    def put(self, update=False):
+        kwargs = {
+            **self.as_dict(),
+            "update": update,
+        }
+        return self._table.put_item(**kwargs)
