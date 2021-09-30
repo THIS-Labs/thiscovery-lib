@@ -15,7 +15,10 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
+from __future__ import annotations
+
 import json
+from abc import ABCMeta, abstractmethod
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from http import HTTPStatus
@@ -383,10 +386,89 @@ class Dynamodb(utils.BaseClient):
             table.delete_item(Key=key_json)
 
 
-class DdbBaseItem:
+class DdbBaseTable(metaclass=ABCMeta):
     """
-    Base class representing a Ddb item
+    Base abstract class representing a Ddb table
     """
+
+    name = None
+    partition = None
+    sort = None
+
+    def __init__(self, stack_name, correlation_id=None):
+        assert self.name, f"{self.__class__}.name must be set"
+        assert self.partition, f"{self.__class__}.partition must be set"
+        self.correlation_id = correlation_id
+        self._ddb_client = Dynamodb(
+            stack_name=stack_name, correlation_id=correlation_id
+        )
+
+    def delete_all(self):
+        return self._ddb_client.delete_all(
+            table_name=self.name,
+            table_name_verbatim=False,
+            correlation_id=self.correlation_id,
+            key_name=self.partition,
+            sort_key_name=self.sort,
+        )
+
+    def scan(self, **kwargs):
+        return self._ddb_client.scan(
+            table_name=self.name,
+            filter_attr_name=kwargs.get("filter_attr_name"),
+            filter_attr_values=kwargs.get("filter_attr_values"),
+            table_name_verbatim=kwargs.get("table_name_verbatim", False),
+        )
+
+    def put_item(self, **kwargs):
+        """
+        Args:
+            **kwargs: DdbBaseItem.as_dict()
+
+        Returns:
+
+        """
+        update = kwargs.pop("update", False)
+        key = kwargs.pop(self.partition)
+        sort_key = kwargs.pop(self.sort, None)
+        if sort_key:
+            sort_key = {self.sort: sort_key}
+        return self._ddb_client.put_item(
+            table_name=self.name,
+            key=key,
+            key_name=self.partition,
+            item_type=kwargs.pop("item_type", "ddb_item"),
+            item_details=kwargs.get("item_details"),
+            item=kwargs,
+            sort_key=sort_key,
+            update_allowed=update,
+        )
+
+    def update_item(self, **kwargs):
+        sort_key = None
+        if self.sort:
+            sort_key = {self.sort: kwargs["sort"]}
+        return self._ddb_client.update_item(
+            table_name=self.name,
+            key=kwargs["partition"],
+            key_name=self.partition,
+            name_value_pairs=kwargs["name_value_pairs"],
+            sort_key=sort_key,
+        )
+
+
+class DdbBaseItem(metaclass=ABCMeta):
+    """
+    Base abstract class representing a Ddb item
+    """
+
+    def __init__(self, table: DdbBaseTable, ddb_client=None):
+        """
+        Args:
+            table: table class for this item type
+        """
+        self._table = table
+        self._ddb_client = ddb_client
 
     def __repr__(self):
         return self.as_dict()
@@ -400,3 +482,10 @@ class DdbBaseItem:
 
     def from_dict(self, item_dict):
         self.__dict__.update(item_dict)
+
+    def put(self, update=False):
+        kwargs = {
+            **self.as_dict(),
+            "update": update,
+        }
+        return self._table.put_item(**kwargs)
