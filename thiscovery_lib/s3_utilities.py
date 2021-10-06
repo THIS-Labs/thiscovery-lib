@@ -41,6 +41,12 @@ class S3Client(utils.BaseClient):
         """
         return self.client.head_object(Bucket=bucket, Key=key, **kwargs)
 
+    def download_file(self, bucket, key, filename, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.download_file
+        """
+        return self.client.download_file(Bucket=bucket, Key=key, Filename=filename, **kwargs)
+
     def download_fileobj(self, bucket, key, file_obj, **kwargs):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.download_fileobj
