@@ -1,0 +1,6 @@
+Metadata-Version: 1.2
+Name: thiscovery-lib
+Version: 2021.2.3.2
+Summary: Thiscovery library
+Home-page: https://github.com/THIS-Institute/thiscovery-lib
+Requires-Python: >=3.6
