@@ -34,7 +34,8 @@ class SsmClient(utils.BaseClient):
 
         Returns:
         """
-        response = self.client.get_parameter(Name=f"{utils.get_aws_namespace()}{name}")
+        param_name = f"{utils.get_aws_namespace()}{name}"
+        response = self.client.get_parameter(Name=param_name)
         assert (
             response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
         ), f"Call to SSM client failed with response: {response}"
