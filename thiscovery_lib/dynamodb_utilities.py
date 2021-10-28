@@ -403,6 +403,15 @@ class DdbBaseTable(metaclass=ABCMeta):
             stack_name=stack_name, correlation_id=correlation_id
         )
 
+    def query(self, **kwargs):
+        return self._ddb_client.query(
+            table_name=self.name,
+            table_name_verbatim=kwargs.pop("table_name_verbatim", False),
+            filter_attr_name=kwargs.pop("filter_attr_name"),
+            filter_attr_values=kwargs.pop("filter_attr_values"),
+            **kwargs
+        )
+
     def delete_all(self):
         return self._ddb_client.delete_all(
             table_name=self.name,
@@ -420,6 +429,31 @@ class DdbBaseTable(metaclass=ABCMeta):
             table_name_verbatim=kwargs.get("table_name_verbatim", False),
         )
 
+    def resolve_keys(self, **kwargs):
+        key = kwargs.pop(self.partition)
+        sort_key = kwargs.pop(self.sort, None)
+        if sort_key:
+            sort_key = {
+                self.sort: sort_key
+            }
+        return key, sort_key, kwargs
+
+    def get_item(self, **kwargs):
+        """
+        Args:
+            **kwargs: DdbBaseItem.as_dict()
+
+        Returns:
+
+        """
+        key, sort_key, kwargs = self.resolve_keys(**kwargs)
+        return self._ddb_client.get_item(
+            table_name=self.name,
+            key=key,
+            key_name=self.partition,
+            sort_key=sort_key,
+        )
+
     def put_item(self, **kwargs):
         """
         Args:
@@ -428,11 +462,8 @@ class DdbBaseTable(metaclass=ABCMeta):
         Returns:
 
         """
+        key, sort_key, kwargs = self.resolve_keys(**kwargs)
         update = kwargs.pop("update", False)
-        key = kwargs.pop(self.partition)
-        sort_key = kwargs.pop(self.sort, None)
-        if sort_key:
-            sort_key = {self.sort: sort_key}
         return self._ddb_client.put_item(
             table_name=self.name,
             key=key,
