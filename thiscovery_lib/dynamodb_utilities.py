@@ -409,7 +409,7 @@ class DdbBaseTable(metaclass=ABCMeta):
             table_name_verbatim=kwargs.pop("table_name_verbatim", False),
             filter_attr_name=kwargs.pop("filter_attr_name"),
             filter_attr_values=kwargs.pop("filter_attr_values"),
-            **kwargs
+            **kwargs,
         )
 
     def delete_all(self):
@@ -433,9 +433,7 @@ class DdbBaseTable(metaclass=ABCMeta):
         key = kwargs.pop(self.partition)
         sort_key = kwargs.pop(self.sort, None)
         if sort_key:
-            sort_key = {
-                self.sort: sort_key
-            }
+            sort_key = {self.sort: sort_key}
         return key, sort_key, kwargs
 
     def get_item(self, **kwargs):
@@ -513,6 +511,12 @@ class DdbBaseItem(metaclass=ABCMeta):
 
     def from_dict(self, item_dict):
         self.__dict__.update(item_dict)
+
+    def get(self):
+        result = self._table.get_item(**self.as_dict())
+        if result:
+            self.from_dict(result)
+        return result
 
     def put(self, update=False):
         kwargs = {
