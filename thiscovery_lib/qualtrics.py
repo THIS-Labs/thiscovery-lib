@@ -278,6 +278,7 @@ class ResponsesClient(BaseClient):
             qualtrics_account_name=qualtrics_account_name, correlation_id=correlation_id
         )
         self.base_endpoint = f"{self.base_url}/v3/surveys/{survey_id}"
+        self.survey_id = survey_id
 
     def retrieve_survey_response_schema(self):
         """
@@ -298,6 +299,30 @@ class ResponsesClient(BaseClient):
         response = self.qualtrics_request("GET", endpoint_url=url)
         assert (
             response["meta"]["httpStatus"] == "200 - OK"
+        ), f"Qualtrics API call failed with response: {response}"
+        return response
+
+    def update_response(self, response_id, embedded_data):
+        """
+        https://api.qualtrics.com/api-reference/b3A6NjEwNzA-update-response
+
+        Args:
+            response_id (str)
+            embedded_data (dict): {
+                "property1": "string",
+                "property2": "string"
+            }
+        """
+
+        url = f"{self.base_url}/v3/responses/{response_id}"
+        data = {
+            "surveyId": self.survey_id,
+            "resetRecordedDate": True,
+            "embeddedData": embedded_data,
+        }
+        response = self.qualtrics_request("PUT", endpoint_url=url, data=data)
+        assert (
+                response["meta"]["httpStatus"] == "200 - OK"
         ), f"Qualtrics API call failed with response: {response}"
         return response
 
