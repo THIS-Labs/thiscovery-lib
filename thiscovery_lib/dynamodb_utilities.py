@@ -385,6 +385,17 @@ class Dynamodb(utils.BaseClient):
             )
             table.delete_item(Key=key_json)
 
+    def wait_until_table_exists(
+        self,
+        table_name: str,
+        table_name_verbatim=False,
+    ):
+        if table_name_verbatim:
+            table = self.client.Table(table_name)
+        else:
+            table = self.get_table(table_name)
+        return table.wait_until_exists()
+
 
 class DdbBaseTable(metaclass=ABCMeta):
     """

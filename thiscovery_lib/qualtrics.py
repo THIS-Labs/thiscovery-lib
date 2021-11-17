@@ -322,7 +322,7 @@ class ResponsesClient(BaseClient):
         }
         response = self.qualtrics_request("PUT", endpoint_url=url, data=data)
         assert (
-                response["meta"]["httpStatus"] == "200 - OK"
+            response["meta"]["httpStatus"] == "200 - OK"
         ), f"Qualtrics API call failed with response: {response}"
         return response
 
