@@ -336,6 +336,7 @@ class BaseClient:
         if (profile_name is None) and not running_on_aws():
             profile_name = namespace2profile(get_aws_namespace())
         session = _get_default_session(profile_name)
+        self.aws_namespace = kwargs.pop("aws_namespace", None)
         if client_type == "low-level":
             self.client = session.client(service_name, **kwargs)
         elif client_type == "resource":
@@ -345,7 +346,6 @@ class BaseClient:
                 f"client_type can only be 'low-level' or 'resource', not {client_type}"
             )
         self.logger = get_logger()
-        self.aws_namespace = kwargs.get("aws_namespace")
         self.correlation_id = correlation_id
 
     def get_namespace(self):
