@@ -39,6 +39,7 @@ class Dynamodb(utils.BaseClient):
             client_type="resource",
             correlation_id=correlation_id,
             profile_name=profile_name,
+            **kwargs,
         )
         super().get_namespace()
         self.stack_name = stack_name
