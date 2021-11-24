@@ -27,9 +27,14 @@ import thiscovery_lib.utilities as utils
 
 
 class Dynamodb(utils.BaseClient):
-    def __init__(self, stack_name="thiscovery-core", correlation_id=None):
+    def __init__(
+        self, stack_name="thiscovery-core", correlation_id=None, profile_name=None
+    ):
         super().__init__(
-            "dynamodb", client_type="resource", correlation_id=correlation_id
+            "dynamodb",
+            client_type="resource",
+            correlation_id=correlation_id,
+            profile_name=profile_name,
         )
         super().get_namespace()
         self.stack_name = stack_name
@@ -406,12 +411,14 @@ class DdbBaseTable(metaclass=ABCMeta):
     partition = None
     sort = None
 
-    def __init__(self, stack_name, correlation_id=None):
+    def __init__(self, stack_name, correlation_id=None, profile_name=None):
         assert self.name, f"{self.__class__}.name must be set"
         assert self.partition, f"{self.__class__}.partition must be set"
         self.correlation_id = correlation_id
         self._ddb_client = Dynamodb(
-            stack_name=stack_name, correlation_id=correlation_id
+            stack_name=stack_name,
+            correlation_id=correlation_id,
+            profile_name=profile_name,
         )
 
     def query(self, **kwargs):
