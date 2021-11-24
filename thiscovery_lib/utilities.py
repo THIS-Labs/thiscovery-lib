@@ -345,7 +345,7 @@ class BaseClient:
                 f"client_type can only be 'low-level' or 'resource', not {client_type}"
             )
         self.logger = get_logger()
-        self.aws_namespace = None
+        self.aws_namespace = kwargs.get("aws_namespace")
         self.correlation_id = correlation_id
 
     def get_namespace(self):

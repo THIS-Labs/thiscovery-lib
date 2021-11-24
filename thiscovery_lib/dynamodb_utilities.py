@@ -28,7 +28,11 @@ import thiscovery_lib.utilities as utils
 
 class Dynamodb(utils.BaseClient):
     def __init__(
-        self, stack_name="thiscovery-core", correlation_id=None, profile_name=None
+        self,
+        stack_name="thiscovery-core",
+        correlation_id=None,
+        profile_name=None,
+        **kwargs,
     ):
         super().__init__(
             "dynamodb",
@@ -411,7 +415,7 @@ class DdbBaseTable(metaclass=ABCMeta):
     partition = None
     sort = None
 
-    def __init__(self, stack_name, correlation_id=None, profile_name=None):
+    def __init__(self, stack_name, correlation_id=None, profile_name=None, **kwargs):
         assert self.name, f"{self.__class__}.name must be set"
         assert self.partition, f"{self.__class__}.partition must be set"
         self.correlation_id = correlation_id
@@ -419,6 +423,7 @@ class DdbBaseTable(metaclass=ABCMeta):
             stack_name=stack_name,
             correlation_id=correlation_id,
             profile_name=profile_name,
+            **kwargs,
         )
 
     def query(self, **kwargs):
