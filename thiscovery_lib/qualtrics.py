@@ -68,7 +68,6 @@ class BaseClient:
         if response.ok:
             return response.json()
         else:
-            print(response.text)
             raise utils.DetailedValueError(
                 "Call to Qualtrics API failed", details={"response.text": response.text}
             )
