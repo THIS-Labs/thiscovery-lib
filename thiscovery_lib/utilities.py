@@ -59,6 +59,8 @@ def namespace2profile(namespace):
             "/test-afs25/": "THISCOVERY_AFS25_PROFILE",
             "/dev-amp205/": "THISCOVERY_AMP205_PROFILE",
             "/test-amp205/": "THISCOVERY_AMP205_PROFILE",
+            "/dev-sem86/": "THISCOVERY_SEM86_PROFILE",
+            "/test-sem86/": "THISCOVERY_SEM86_PROFILE",
             "/router-prod/": "ROUTER_PROD_PROFILE",
         }
         env_var_name = namespace2env_var_name.get(namespace)
