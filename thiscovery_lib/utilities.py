@@ -37,6 +37,8 @@ from pythonjsonlogger import jsonlogger
 from timeit import default_timer as timer
 from urllib.parse import quote_plus
 
+from local.dev_config import namespace2env_var_name  # set environment variables
+
 
 # region constants
 def name2namespace(name):
@@ -52,17 +54,6 @@ def namespace2profile(namespace):
     Maps namespaces in dev_config.py to profiles in ~/.aws/credentials
     """
     if not running_on_aws():
-        namespace2env_var_name = {
-            "/prod/": "THISCOVERY_PROD_PROFILE",
-            "/staging/": "THISCOVERY_STAGING_PROFILE",
-            "/dev-afs25/": "THISCOVERY_AFS25_PROFILE",
-            "/test-afs25/": "THISCOVERY_AFS25_PROFILE",
-            "/dev-amp205/": "THISCOVERY_AMP205_PROFILE",
-            "/test-amp205/": "THISCOVERY_AMP205_PROFILE",
-            "/dev-sem86/": "THISCOVERY_SEM86_PROFILE",
-            "/test-sem86/": "THISCOVERY_SEM86_PROFILE",
-            "/router-prod/": "ROUTER_PROD_PROFILE",
-        }
         env_var_name = namespace2env_var_name.get(namespace)
         try:
             return os.environ[env_var_name]
