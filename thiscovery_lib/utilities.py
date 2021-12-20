@@ -49,25 +49,25 @@ def namespace2name(namespace):
 
 def namespace2profile(namespace):
     """
-    Maps namespaces in dev_config.py to profiles in ~/.aws/credentials
+    Maps namespaces in secrets.py to profiles in ~/.aws/credentials
     """
     if not running_on_aws():
-        namespace2env_var_name = {
-            "/prod/": "THISCOVERY_PROD_PROFILE",
-            "/staging/": "THISCOVERY_STAGING_PROFILE",
-            "/dev-afs25/": "THISCOVERY_AFS25_PROFILE",
-            "/test-afs25/": "THISCOVERY_AFS25_PROFILE",
-            "/dev-amp205/": "THISCOVERY_AMP205_PROFILE",
-            "/test-amp205/": "THISCOVERY_AMP205_PROFILE",
-            "/router-prod/": "ROUTER_PROD_PROFILE",
-        }
-        env_var_name = namespace2env_var_name.get(namespace)
+
         try:
-            return os.environ[env_var_name]
+            namespace2env_var_name = os.environ["NAMESPACE2ENV_VAR_NAME"]
         except KeyError:
             raise DetailedValueError(
-                f"{env_var_name} environment variable not defined", {}
+                "NAMESPACE2ENV_VAR_NAME environment variable not defined", {}
             )
+
+        env_var_name = json.loads(namespace2env_var_name).get(namespace)
+
+        if env_var_name is None:
+            raise DetailedValueError(
+                f"{namespace} environment variable not defined", {}
+            )
+
+        return os.environ[env_var_name]
 
 
 PRODUCTION_ENV_NAME = "prod"
