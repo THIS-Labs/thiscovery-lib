@@ -37,8 +37,6 @@ from pythonjsonlogger import jsonlogger
 from timeit import default_timer as timer
 from urllib.parse import quote_plus
 
-from local.dev_config import namespace2env_var_name  # set environment variables
-
 
 # region constants
 def name2namespace(name):
@@ -54,7 +52,7 @@ def namespace2profile(namespace):
     Maps namespaces in dev_config.py to profiles in ~/.aws/credentials
     """
     if not running_on_aws():
-        env_var_name = namespace2env_var_name.get(namespace)
+        env_var_name = json.loads("NAMESPACE2ENV_VAR_NAME").get(namespace)
         try:
             return os.environ[env_var_name]
         except KeyError:
