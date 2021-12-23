@@ -444,10 +444,7 @@ class DdbBaseTable(metaclass=ABCMeta):
         Returns:
         """
         self.get_table()
-        return self.table.query(
-            table_name=self.name,
-            **kwargs,
-        )
+        return self.table.query(**kwargs)
 
     def query_index_by_partition_only(self, index_name, index_partition_name, index_partition_value):
         return self.query(
