@@ -442,11 +442,19 @@ class DdbBaseTable(metaclass=ABCMeta):
             **kwargs:
 
         Returns:
+            List of matching items
         """
-        self.get_table()
-        return self.table.query(**kwargs)
 
-    def query_index_by_partition_only(self, index_name, index_partition_name, index_partition_value):
+        self.get_table()
+        r = self.table.query(**kwargs)
+        assert (
+            r["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        ), f"Dynamodb query failed with response: {r}"
+        return r.get("Items", list())
+
+    def query_index_by_partition_only(
+        self, index_name, index_partition_name, index_partition_value
+    ):
         return self.query(
             IndexName=index_name,
             KeyConditionExpression=f"{index_partition_name} = :{index_partition_name}",
