@@ -426,6 +426,11 @@ class DdbBaseTable(metaclass=ABCMeta):
             profile_name=profile_name,
             **kwargs,
         )
+        self.table = None
+
+    def get_table(self):
+        if self.table is None:
+            self.table = self._ddb_client.get_table(self.name)
 
     def query(self, **kwargs):
         return self._ddb_client.query(
