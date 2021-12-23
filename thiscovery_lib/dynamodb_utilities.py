@@ -433,12 +433,29 @@ class DdbBaseTable(metaclass=ABCMeta):
             self.table = self._ddb_client.get_table(self.name)
 
     def query(self, **kwargs):
-        return self._ddb_client.query(
+        """
+        Performs query using the existing table resource object, which should
+        be quicker than calling _ddb_client.query (that method always has to
+        create a new table resource object first)
+
+        Args:
+            **kwargs:
+
+        Returns:
+        """
+        self.get_table()
+        return self.table.query(
             table_name=self.name,
-            table_name_verbatim=kwargs.pop("table_name_verbatim", False),
-            filter_attr_name=kwargs.pop("filter_attr_name"),
-            filter_attr_values=kwargs.pop("filter_attr_values"),
             **kwargs,
+        )
+
+    def query_index_by_partition_only(self, index_name, index_partition_name, index_partition_value):
+        return self.query(
+            IndexName=index_name,
+            KeyConditionExpression=f"{index_partition_name} = :{index_partition_name}",
+            ExpressionAttributeValues={
+                f":{index_partition_name}": index_partition_value
+            },
         )
 
     def delete_all(self):
