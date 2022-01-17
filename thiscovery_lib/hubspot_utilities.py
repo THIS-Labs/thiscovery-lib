@@ -358,7 +358,7 @@ class HubSpotClient:
         Make requests using developer API key and user id instead of usual oAuth2 token
         This is necessary for creating TLE types
         """
-        from local.secrets import HUBSPOT_DEVELOPER_APIKEY, HUBSPOT_DEVELOPER_USERID
+        from api.local.secrets import HUBSPOT_DEVELOPER_APIKEY, HUBSPOT_DEVELOPER_USERID
 
         if self.app_id is None:
             self.get_hubspot_connection_secret()
