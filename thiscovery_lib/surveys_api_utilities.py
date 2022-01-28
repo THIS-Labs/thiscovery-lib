@@ -48,7 +48,7 @@ class SurveysApiClient(tau.ThiscoveryApiClient):
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_personal_link(
-        self, survey_id, anon_project_specific_user_id, account="cambridge"
+        self, survey_id, anon_project_specific_user_id, account="cambridge", **kwargs
     ):
         return utils.aws_get(
             endpoint_url="v1/personal-link",
@@ -57,6 +57,8 @@ class SurveysApiClient(tau.ThiscoveryApiClient):
                 "survey_id": survey_id,
                 "anon_project_specific_user_id": anon_project_specific_user_id,
                 "account": account,
+                "project_task_id": kwargs.pop("project_task_id", None),
+                "task_short_name": kwargs.pop("task_short_name", None),
             },
         )
 
