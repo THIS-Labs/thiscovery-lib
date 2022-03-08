@@ -82,12 +82,20 @@ STAGING_NAMESPACE = name2namespace(STAGING_ENV_NAME)
 
 # region Custom error classes and handling
 class DetailedValueError(ValueError):
-    def __init__(self, message, details):
+    def __init__(self, message: str, details: dict):
+        """
+        Args:
+            message:
+            details: Do not include anything that cannot be transformed to JSON in the details dict
+        """
         self.message = message
         self.details = details
 
-    # def __str__(self):
-    #     return f"{self.message}: {simplejson.dumps(self.details)}"
+    def __str__(self):
+        try:
+            return f"{self.message}: {simplejson.dumps(self.details)}"
+        except:
+            return f"DetailedValueError failed to decode error details; here is the error message: {self.message}"
 
     def as_response_body(self):
         try:

@@ -207,3 +207,32 @@ class TestCountry(TestCase):
         self.assertRaises(DetailedValueError, get_country_name, "ZX")
         self.assertRaises(DetailedValueError, get_country_name, "")
         self.assertRaises(DetailedValueError, get_country_name, "abcdef")
+
+
+class TestExceptions(test_utils.BaseTestCase):
+    def test_DetailedValueError_init_ok_non_jsonable_payload(self):
+        class MockHubSpotInvalidEmailResponse:
+            content = b'{"validationResults":[{"isValid":false,"message":"Email address invalid.email@wales.nhs.ik is invalid",'
+            b'"error":"INVALID_EMAIL","name":"email"}],"status":"error","message":"Property values were not valid",'
+            b'"correlationId":"70a021f3-0224-4ea9-bfab-d6374d4d7e68"}'
+            status_code = 400
+            url = "https://api.hubapi.com/contacts/v1/contact/createOrUpdate/email/invalid.email@wales.nhs.ik"
+
+        mock_response = MockHubSpotInvalidEmailResponse()
+        errorjson = {
+            "url": mock_response.url,
+            "result": mock_response,  # this is the problematic bit of errorjson
+            "content": mock_response.content,
+        }
+
+        try:
+            raise utils.DetailedValueError(
+                "Hubspot call returned HTTP code " + str(mock_response.status_code),
+                errorjson,
+            )
+        except Exception as ex:
+            error_message = str(ex)
+            self.assertEqual(
+                "DetailedValueError failed to decode error details; here is the error message: Hubspot call returned HTTP code 400",
+                error_message,
+            )
