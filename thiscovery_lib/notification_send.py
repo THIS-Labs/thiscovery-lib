@@ -25,7 +25,11 @@ from thiscovery_lib.notifications import (
 )
 
 
-def notify_new_user_registration(new_user, correlation_id):
+def notify_new_user_registration(
+    new_user,
+    correlation_id,
+    stack_name="thiscovery-core",
+):
     notification_item = create_notification(new_user["email"])
     key = new_user["id"]
     save_notification(
@@ -34,6 +38,7 @@ def notify_new_user_registration(new_user, correlation_id):
         new_user,
         notification_item,
         correlation_id,
+        stack_name=stack_name,
     )
 
 
