@@ -25,6 +25,18 @@ class SsmClient(utils.BaseClient):
     def __init__(self):
         super().__init__("ssm")
 
+    def resolve_param_name(self, name: str) -> str:
+        """
+        Appends the AWS namespace to the name of a parameter to form its full name.
+        For example, from sdhs/ignore-list to /test-afs25/sdhs/ignore-list
+
+        Args:
+            name:
+
+        Returns:
+        """
+        return f"{utils.get_aws_namespace()}{name}"
+
     def get_parameter(self, name: str) -> dict[str, dict]:
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.get_parameter
@@ -34,7 +46,7 @@ class SsmClient(utils.BaseClient):
 
         Returns:
         """
-        param_name = f"{utils.get_aws_namespace()}{name}"
+        param_name = self.resolve_param_name(name)
         response = self.client.get_parameter(Name=param_name)
         assert (
             response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
@@ -54,3 +66,21 @@ class SsmClient(utils.BaseClient):
         return self.client.get_parameters(
             Names=[f"{namespace}{name}" for name in names]
         )
+
+    def put_parameter(self, name: str, value, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.put_parameter
+        Args:
+            name:
+            value:
+            **kwargs:
+
+        Returns:
+        """
+        param_name = self.resolve_param_name(name)
+        value = json.dumps(value)
+        response = self.client.put_parameter(Name=param_name, Value=value, **kwargs)
+        assert (
+            response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        ), f"Call to SSM client failed with response: {response}"
+        return HTTPStatus.OK
