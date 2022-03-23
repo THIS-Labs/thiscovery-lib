@@ -84,3 +84,17 @@ class SsmClient(utils.BaseClient):
             response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
         ), f"Call to SSM client failed with response: {response}"
         return HTTPStatus.OK
+
+    def delete_parameter(self, name: str):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ssm.html#SSM.Client.delete_parameter
+        Args:
+            name:
+        Returns:
+        """
+        param_name = self.resolve_param_name(name)
+        response = self.client.delete_parameter(Name=param_name)
+        assert (
+            response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
+        ), f"Call to SSM client failed with response: {response}"
+        return HTTPStatus.OK
