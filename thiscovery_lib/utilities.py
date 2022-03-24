@@ -29,6 +29,7 @@ import sys
 import uuid
 import traceback
 import validators
+import warnings
 
 from botocore.exceptions import ClientError
 from dateutil import parser, tz
@@ -364,6 +365,10 @@ class BaseClient:
 
 class SsmClient(BaseClient):
     def __init__(self):
+        warnings.warn(
+            "This class is deprecated; use thiscovery-lib.ssm_utilities.SsmClient instead",
+            DeprecationWarning,
+        )
         super().__init__("ssm")
 
     def _prefix_name(self, name, prefix):
