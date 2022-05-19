@@ -20,10 +20,7 @@ IMPORTANT: Please note that thiscovery-core has a cloudwatch_utilities file, whi
 was written before thiscovery-lib was created. Moving the methods written in
 thiscovery-core to this file is the goal of US 4590
 """
-import functools
-import json
-import uuid
-
+import time
 import thiscovery_lib.utilities as utils
 
 
@@ -32,10 +29,14 @@ class CloudWatchLogsClient(utils.BaseClient):
         super().__init__("logs")
 
     @staticmethod
-    def resolve_lambda_name(stack_name, log_group_name):
-        return (
-            f"/aws/lambda/{stack_name}-{utils.get_environment_name()}-{log_group_name}"
-        )
+    def resolve_lambda_name(log_group_name, **kwargs):
+        stack_name = kwargs.pop("stack_name", None)
+        if stack_name:
+            return (
+                f"/aws/lambda/{stack_name}-{utils.get_environment_name()}-{log_group_name}",
+                kwargs,
+            )
+        return log_group_name, kwargs
 
     def describe_log_streams(
         self, log_group_name: str, order_by="LastEventTime", limit=1, **kwargs
@@ -53,9 +54,7 @@ class CloudWatchLogsClient(utils.BaseClient):
 
         Returns:
         """
-        stack_name = kwargs.pop("stack_name", None)
-        if stack_name:
-            log_group_name = self.resolve_lambda_name(stack_name, log_group_name)
+        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
         result = self.client.describe_log_streams(
             logGroupName=log_group_name,
             orderBy=order_by,
@@ -69,20 +68,44 @@ class CloudWatchLogsClient(utils.BaseClient):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.get_log_events
         """
-        stack_name = kwargs.pop("stack_name", None)
-        if stack_name:
-            log_group_name = self.resolve_lambda_name(stack_name, log_group_name)
+        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
         result = self.client.get_log_events(
             logGroupName=log_group_name, logStreamName=log_stream_name, **kwargs
         )
         return result
 
-    def get_latest_log_event(self, log_group_name: str, **kwargs):
-        stack_name = kwargs.pop("stack_name", None)
-        if stack_name:
-            log_group_name = self.resolve_lambda_name(stack_name, log_group_name)
+    def get_latest_log_events(self, log_group_name: str, **kwargs):
+        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
         log_streams = self.describe_log_streams(log_group_name=log_group_name)
         latest_stream_name = log_streams[0]["logStreamName"]
         return self.get_log_events(
             log_group_name=log_group_name, log_stream_name=latest_stream_name
         )
+
+    def find_in_log_message(
+        self, log_group_name: str, query_string: str, timeout=10, **kwargs
+    ):
+        """
+        Looks up query_string in the latest logged events
+
+        Args:
+            log_group_name:
+            query_string:
+            timeout: Give up after this many seconds
+            **kwargs:
+
+        Returns:
+            First found log message containing query_string if one is found;
+            otherwise, returns None
+        """
+        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
+        attempts = 0
+        while attempts < timeout:
+            latest_stream = self.get_latest_log_events(
+                log_group_name=log_group_name, **kwargs
+            )
+            for event in latest_stream["events"]:
+                if query_string in event["message"]:
+                    return event["message"]
+            time.sleep(1)
+            attempts += 1

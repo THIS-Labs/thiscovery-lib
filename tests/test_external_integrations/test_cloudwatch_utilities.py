@@ -27,12 +27,15 @@ from thiscovery_lib.core_api_utilities import CoreApiClient
 
 
 class TestCloudWatchLogs(test_utils.BaseTestCase):
+    expected_log_string = "Response from THIS Institute citizen science"
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.cwl_client = CloudWatchLogsClient()
-        cls.core_api_client = CoreApiClient()
         cls.logger = utils.get_logger()
+        core_api_client = CoreApiClient()
+        core_api_client.ping()
 
     def test_describe_log_streams_ok(self):
         result = self.cwl_client.describe_log_streams(
@@ -53,10 +56,9 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
         self.assertCountEqual(expected_keys, result[0].keys())
 
     def test_get_latest_log_event_ok(self):
-        self.core_api_client.ping()
         attempts = 0
         while attempts < 10:
-            result = self.cwl_client.get_latest_log_event(
+            result = self.cwl_client.get_latest_log_events(
                 log_group_name="ping", stack_name="thiscovery-core"
             )
             if result["events"]:
@@ -65,6 +67,23 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
             attempts += 1
         expected_event_found = False
         for event in result["events"]:
-            if "Response from THIS Institute citizen science" in event["message"]:
+            if self.expected_log_string in event["message"]:
                 expected_event_found = True
         self.assertTrue(expected_event_found)
+
+    def test_find_in_log_message_ok(self):
+        result = self.cwl_client.find_in_log_message(
+            log_group_name="ping",
+            query_string=self.expected_log_string,
+            stack_name="thiscovery-core",
+        )
+        self.assertIsInstance(result, str)
+
+    def test_find_in_log_message_not_found_ok(self):
+        result = self.cwl_client.find_in_log_message(
+            log_group_name="ping",
+            query_string="this string is not present in logs",
+            stack_name="thiscovery-core",
+            timeout=1,
+        )
+        self.assertIsNone(result)
