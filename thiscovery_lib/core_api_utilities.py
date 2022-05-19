@@ -23,6 +23,10 @@ import thiscovery_lib.utilities as utils
 
 
 class CoreApiClient(tau.ThiscoveryApiClient):
+    @tau.check_response(HTTPStatus.OK)
+    def ping(self):
+        return utils.aws_get("v1/ping", self.base_url)
+
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_user_by_email(self, email):
