@@ -765,10 +765,18 @@ def lambda_wrapper(func):
         event["correlation_id"] = correlation_id
         event["logger"] = logger
         updated_args = (event, *args[1:])
-
+        logger.info(
+            "Input event",
+            extra={
+                "decorated func module": func.__module__,
+                "decorated func name": func.__name__,
+                "event": event,
+                "correlation_id": correlation_id,
+            },
+        )
         result = func(*updated_args, **kwargs)
         logger.info(
-            "Decorated function result",
+            "Function result",
             extra={
                 "decorated func module": func.__module__,
                 "decorated func name": func.__name__,
