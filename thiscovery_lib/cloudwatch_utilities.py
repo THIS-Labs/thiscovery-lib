@@ -21,6 +21,8 @@ was written before thiscovery-lib was created. Moving the methods written in
 thiscovery-core to this file is the goal of US 4590
 """
 import time
+from typing import Tuple, Dict, Any
+
 import thiscovery_lib.utilities as utils
 
 
@@ -29,7 +31,27 @@ class CloudWatchLogsClient(utils.BaseClient):
         super().__init__("logs")
 
     @staticmethod
-    def resolve_lambda_name(log_group_name, **kwargs):
+    def resolve_lambda_log_group_name(
+        log_group_name: str, **kwargs
+    ) -> Tuple[str, Dict[str, Any]]:
+        """
+        If stack_name is included in kwargs this function:
+            (1) interprets log_group_name as the resource name of an AWS lambda as specified in
+            SAM templates (e.g. ClearBlocks). It then resolves and returns the log group name of that lambda function in the current
+            env.
+            (2) removes stack name from kwargs
+
+        If stack_name is not included in kwargs, this function simply returns the input
+        log_group_name and unaltered kwargs
+
+        Args:
+            log_group_name: Complete CloudWatch log group name or AWS lambda resource name
+            **kwargs:
+                stack_name (str): Pass thiscovery stack name if log_group_name is an AWS lambda name
+
+        Returns:
+            A tuple containing CloudWatch log group name and kwargs
+        """
         stack_name = kwargs.pop("stack_name", None)
         if stack_name:
             return (
@@ -44,8 +66,8 @@ class CloudWatchLogsClient(utils.BaseClient):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.describe_log_streams
         Args:
-            log_group_name: the name of the log group or, if stack_name is passes in kwargs, short
-                    name of lambda whose logs we would like to query
+            log_group_name: the name of the log group or, if stack_name is passed in kwargs, resource
+                    name of lambda (as set in SAM template) whose logs we would like to query
             order_by: If the value is LogStreamName , the results are ordered by log stream name.
                     If the value is LastEventTime , the results are ordered by the event time
             limit: The maximum number of items returned
@@ -54,7 +76,9 @@ class CloudWatchLogsClient(utils.BaseClient):
 
         Returns:
         """
-        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
+        log_group_name, kwargs = self.resolve_lambda_log_group_name(
+            log_group_name, **kwargs
+        )
         result = self.client.describe_log_streams(
             logGroupName=log_group_name,
             orderBy=order_by,
@@ -68,14 +92,18 @@ class CloudWatchLogsClient(utils.BaseClient):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.get_log_events
         """
-        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
+        log_group_name, kwargs = self.resolve_lambda_log_group_name(
+            log_group_name, **kwargs
+        )
         result = self.client.get_log_events(
             logGroupName=log_group_name, logStreamName=log_stream_name, **kwargs
         )
         return result
 
     def get_latest_log_events(self, log_group_name: str, **kwargs):
-        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
+        log_group_name, kwargs = self.resolve_lambda_log_group_name(
+            log_group_name, **kwargs
+        )
         log_streams = self.describe_log_streams(log_group_name=log_group_name)
         latest_stream_name = log_streams[0]["logStreamName"]
         return self.get_log_events(
@@ -98,7 +126,9 @@ class CloudWatchLogsClient(utils.BaseClient):
             First found log message containing query_string if one is found;
             otherwise, returns None
         """
-        log_group_name, kwargs = self.resolve_lambda_name(log_group_name, **kwargs)
+        log_group_name, kwargs = self.resolve_lambda_log_group_name(
+            log_group_name, **kwargs
+        )
         attempts = 0
         while attempts < timeout:
             latest_stream = self.get_latest_log_events(
