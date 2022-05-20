@@ -21,7 +21,7 @@ was written before thiscovery-lib was created. Moving the methods written in
 thiscovery-core to this file is the goal of US 4590
 """
 import time
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Optional
 
 import thiscovery_lib.utilities as utils
 
@@ -37,8 +37,8 @@ class CloudWatchLogsClient(utils.BaseClient):
         """
         If stack_name is included in kwargs this function:
             (1) interprets log_group_name as the resource name of an AWS lambda as specified in
-            SAM templates (e.g. ClearBlocks). It then resolves and returns the log group name of that lambda function in the current
-            env.
+            SAM templates (e.g. ClearBlocks). It then resolves and returns the log group name of
+            that lambda function in the current runtime env (e.g. staging, test-afs25).
             (2) removes stack name from kwargs
 
         If stack_name is not included in kwargs, this function simply returns the input
@@ -47,7 +47,8 @@ class CloudWatchLogsClient(utils.BaseClient):
         Args:
             log_group_name: Complete CloudWatch log group name or AWS lambda resource name
             **kwargs:
-                stack_name (str): Pass thiscovery stack name if log_group_name is an AWS lambda name
+                stack_name (str): Thiscovery stack name; use only if log_group_name is an
+                        AWS lambda resource name
 
         Returns:
             A tuple containing CloudWatch log group name and kwargs
@@ -72,9 +73,11 @@ class CloudWatchLogsClient(utils.BaseClient):
                     If the value is LastEventTime , the results are ordered by the event time
             limit: The maximum number of items returned
             **kwargs:
-                stack_name: name of stack lambda belongs to
+                stack_name (str): Thiscovery stack name; use only if log_group_name is an
+                        AWS lambda resource name
 
         Returns:
+            List of Cloudwatch log streams retrieved from log group
         """
         log_group_name, kwargs = self.resolve_lambda_log_group_name(
             log_group_name, **kwargs
@@ -88,9 +91,33 @@ class CloudWatchLogsClient(utils.BaseClient):
         )
         return result["logStreams"]
 
-    def get_log_events(self, log_group_name: str, log_stream_name: str, **kwargs):
+    def get_log_events(
+        self, log_group_name: str, log_stream_name: str, **kwargs
+    ) -> Dict[str, Any]:
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.get_log_events
+
+        Args:
+            log_group_name: the name of the log group or, if stack_name is passed in kwargs, resource
+                    name of lambda (as set in SAM template) whose logs we would like to query
+            log_stream_name: The name of the log stream to get events from
+            **kwargs:
+                stack_name (str): Thiscovery stack name; use only if log_group_name is an
+                        AWS lambda resource name
+
+        Returns:
+            Dict of retrieved events (see AWS docs for details):
+            {
+                'events': [
+                    {
+                        'timestamp': 123,
+                        'message': 'string',
+                        'ingestionTime': 123
+                    },
+                ],
+                'nextForwardToken': 'string',
+                'nextBackwardToken': 'string'
+            }
         """
         log_group_name, kwargs = self.resolve_lambda_log_group_name(
             log_group_name, **kwargs
@@ -100,7 +127,31 @@ class CloudWatchLogsClient(utils.BaseClient):
         )
         return result
 
-    def get_latest_log_events(self, log_group_name: str, **kwargs):
+    def get_latest_log_events(self, log_group_name: str, **kwargs) -> Dict[str, Any]:
+        """
+        Retrieves events from the latest log stream of log_group_name
+
+        Args:
+            log_group_name: the name of the log group or, if stack_name is passed in kwargs, resource
+                    name of lambda (as set in SAM template) whose logs we would like to query
+            **kwargs:
+                stack_name (str): Thiscovery stack name; use only if log_group_name is an
+                        AWS lambda resource name
+
+        Returns:
+            Dict of retrieved events (see AWS docs for details):
+            {
+                'events': [
+                    {
+                        'timestamp': 123,
+                        'message': 'string',
+                        'ingestionTime': 123
+                    },
+                ],
+                'nextForwardToken': 'string',
+                'nextBackwardToken': 'string'
+            }
+        """
         log_group_name, kwargs = self.resolve_lambda_log_group_name(
             log_group_name, **kwargs
         )
@@ -112,15 +163,18 @@ class CloudWatchLogsClient(utils.BaseClient):
 
     def find_in_log_message(
         self, log_group_name: str, query_string: str, timeout=10, **kwargs
-    ):
+    ) -> Optional[str]:
         """
         Looks up query_string in the latest logged events
 
         Args:
-            log_group_name:
-            query_string:
+            log_group_name: the name of the log group or, if stack_name is passed in kwargs, resource
+                    name of lambda (as set in SAM template) whose logs we would like to query
+            query_string: String to query. If a log message contains query_string, it will be returned
             timeout: Give up after this many seconds
             **kwargs:
+                stack_name (str): Thiscovery stack name; use only if log_group_name is an
+                        AWS lambda resource name
 
         Returns:
             First found log message containing query_string if one is found;
