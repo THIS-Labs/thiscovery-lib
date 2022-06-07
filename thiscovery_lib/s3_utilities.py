@@ -35,6 +35,12 @@ class S3Client(utils.BaseClient):
         """
         return self.client.get_object(Bucket=bucket, Key=key, **kwargs)
 
+    def put_object(self, bucket, key, body, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.put_object
+        """
+        return self.client.put_object(Bucket=bucket, Key=key, Body=body, **kwargs)
+
     def head_object(self, bucket, key, **kwargs):
         """
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
