@@ -215,6 +215,10 @@ def now_with_tz():
     return datetime.datetime.now(tz.tzlocal())
 
 
+def utc_now():
+    return datetime.datetime.now(datetime.timezone.utc).timestamp()
+
+
 def get_start_time():
     return timer()
 

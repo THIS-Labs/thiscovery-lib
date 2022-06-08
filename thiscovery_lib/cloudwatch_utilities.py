@@ -175,6 +175,8 @@ class CloudWatchLogsClient(utils.BaseClient):
             **kwargs:
                 stack_name (str): Thiscovery stack name; use only if log_group_name is an
                         AWS lambda resource name
+                earliest_log (float): Utc timestamp; any log entries older than this value
+                        will be ignored
 
         Returns:
             First found log message containing query_string if one is found;
@@ -184,11 +186,14 @@ class CloudWatchLogsClient(utils.BaseClient):
             log_group_name, **kwargs
         )
         attempts = 0
+        earliest_log = kwargs.get("earliest_log", 0)
         while attempts < timeout:
             latest_stream = self.get_latest_log_events(
                 log_group_name=log_group_name, **kwargs
             )
             for event in latest_stream["events"]:
+                if event["timestamp"] < earliest_log:
+                    break
                 if query_string in event["message"]:
                     return event["message"]
             time.sleep(1)

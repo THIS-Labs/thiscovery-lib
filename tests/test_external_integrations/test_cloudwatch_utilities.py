@@ -87,3 +87,13 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
             timeout=1,
         )
         self.assertIsNone(result)
+
+    def test_find_in_log_message_too_old(self):
+        result = self.cwl_client.find_in_log_message(
+            log_group_name="ping",
+            query_string=self.expected_log_string,
+            stack_name="thiscovery-core",
+            earliest_log=3000000000000,
+            timeout=1,
+        )
+        self.assertIsNone(result)
