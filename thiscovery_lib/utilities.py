@@ -103,7 +103,7 @@ class DetailedValueError(ValueError):
             return json.dumps({"message": self.message, **self.details})
         except TypeError:
             print(f"message: {self.message}; details: {self.details}")
-            return json.dumps({"message": self.message, **self.details})
+            return simplejson.dumps({"message": self.message, **self.details})
 
     def add_correlation_id(self, correlation_id):
         self.details["correlation_id"] = str(correlation_id)
