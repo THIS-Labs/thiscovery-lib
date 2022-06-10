@@ -23,6 +23,7 @@ from unittest import TestCase
 import thiscovery_dev_tools.testing_tools as test_utils
 
 from local.dev_config import UNIT_TEST_NAMESPACE
+from http import HTTPStatus
 
 
 class TestOther(test_utils.BaseTestCase):
@@ -212,3 +213,55 @@ class TestExceptions(test_utils.BaseTestCase):
                 "DetailedValueError failed to decode error details; here is the error message: Hubspot call returned HTTP code 400",
                 error_message,
             )
+
+
+@utils.lambda_wrapper
+@utils.api_error_handler
+def raise_exception(event: dict, exception, *exception_args):
+    raise exception(*exception_args)
+
+
+class ApiErrorHandlerTestCase(test_utils.BaseTestCase):
+    details_dict = dict()
+
+    def test_deliberate_error_handling(self):
+        result = raise_exception(
+            dict(), utils.DeliberateError, "deliberate error message", self.details_dict
+        )
+        self.assertEqual(HTTPStatus.METHOD_NOT_ALLOWED, result["statusCode"])
+
+    def test_duplicate_insert_error_handling(self):
+        result = raise_exception(
+            dict(),
+            utils.DuplicateInsertError,
+            "duplicate insert error message",
+            self.details_dict,
+        )
+        self.assertEqual(HTTPStatus.CONFLICT, result["statusCode"])
+
+    def test_object_does_not_exist_error_handling(self):
+        result = raise_exception(
+            dict(),
+            utils.ObjectDoesNotExistError,
+            "object does not exist error message",
+            self.details_dict,
+        )
+        self.assertEqual(HTTPStatus.NOT_FOUND, result["statusCode"])
+
+    def test_detailed_value_error_handling(self):
+        result = raise_exception(
+            dict(),
+            utils.DetailedValueError,
+            "detailed value error message",
+            self.details_dict,
+        )
+        self.assertEqual(HTTPStatus.BAD_REQUEST, result["statusCode"])
+
+    def test_assertion_error_handling(self):
+        result = raise_exception(
+            dict(),
+            AssertionError,
+            "assertion error message",
+            self.details_dict,
+        )
+        self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, result["statusCode"])
