@@ -23,7 +23,6 @@ from unittest import TestCase
 import thiscovery_dev_tools.testing_tools as test_utils
 
 from local.dev_config import UNIT_TEST_NAMESPACE
-from thiscovery_lib.utilities import set_running_unit_tests
 
 
 class TestOther(test_utils.BaseTestCase):
@@ -184,29 +183,6 @@ class TestMinimiseWhiteSpace(TestCase):
         str1 = "hello world world"
         str2 = "hello world world"
         self.assertEqual(str2, minimise_white_space(str1))
-
-
-class TestCountry(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        set_running_unit_tests(True)
-
-    @classmethod
-    def tearDownClass(cls):
-        set_running_unit_tests(False)
-
-    def test_get_country_name_ok(self):
-        from thiscovery_lib.utilities import get_country_name
-
-        self.assertEqual("France", get_country_name("FR"))
-        self.assertEqual("United Kingdom", get_country_name("GB"))
-
-    def test_get_country_name_fail(self):
-        from thiscovery_lib.utilities import get_country_name, DetailedValueError
-
-        self.assertRaises(DetailedValueError, get_country_name, "ZX")
-        self.assertRaises(DetailedValueError, get_country_name, "")
-        self.assertRaises(DetailedValueError, get_country_name, "abcdef")
 
 
 class TestExceptions(test_utils.BaseTestCase):
