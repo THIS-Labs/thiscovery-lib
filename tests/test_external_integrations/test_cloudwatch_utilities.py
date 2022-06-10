@@ -79,6 +79,33 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
         )
         self.assertIsInstance(result, str)
 
+    def test_find_in_log_message_query_list_ok(self):
+        result = self.cwl_client.find_in_log_message(
+            log_group_name="ping",
+            query_string=[self.expected_log_string, "function result"],
+            stack_name="thiscovery-core",
+        )
+        self.assertIsInstance(result, str)
+
+    def test_find_in_log_message_query_list_not_found_ok(self):
+        result = self.cwl_client.find_in_log_message(
+            log_group_name="ping",
+            query_string=[self.expected_log_string, "this is not in the logs"],
+            stack_name="thiscovery-core",
+            timeout=1,
+        )
+        self.assertIsNone(result)
+
+    def test_find_in_log_message_query_list_OR_ok(self):
+        result = self.cwl_client.find_in_log_message(
+            log_group_name="ping",
+            query_string=[self.expected_log_string, "this is not in the logs"],
+            stack_name="thiscovery-core",
+            timeout=1,
+            conditional_operator="OR",
+        )
+        self.assertIsInstance(result, str)
+
     def test_find_in_log_message_not_found_ok(self):
         result = self.cwl_client.find_in_log_message(
             log_group_name="ping",
@@ -97,3 +124,22 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
             timeout=1,
         )
         self.assertIsNone(result)
+
+    def test_find_in_log_message_invalid_query_string_type(self):
+        with self.assertRaises(utils.DetailedValueError):
+            self.cwl_client.find_in_log_message(
+                log_group_name="ping",
+                query_string={"string_to_query": self.expected_log_string},
+                stack_name="thiscovery-core",
+                timeout=1,
+            )
+
+    def test_find_in_log_message_invalid_conditional_operator(self):
+        with self.assertRaises(utils.DetailedValueError):
+            self.cwl_client.find_in_log_message(
+                log_group_name="ping",
+                query_string=[self.expected_log_string, "this is not in the logs"],
+                stack_name="thiscovery-core",
+                timeout=1,
+                conditional_operator="ALL",
+            )

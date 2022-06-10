@@ -21,7 +21,7 @@ was written before thiscovery-lib was created. Moving the methods written in
 thiscovery-core to this file is the goal of US 4590
 """
 import time
-from typing import Tuple, Dict, Any, Optional
+from typing import Tuple, Dict, Any, Optional, Union
 
 import thiscovery_lib.utilities as utils
 
@@ -162,7 +162,7 @@ class CloudWatchLogsClient(utils.BaseClient):
         )
 
     def find_in_log_message(
-        self, log_group_name: str, query_string: str, timeout=10, **kwargs
+        self, log_group_name: str, query_string: Union[str, list], timeout=10, **kwargs
     ) -> Optional[str]:
         """
         Looks up query_string in the latest logged events
@@ -170,13 +170,16 @@ class CloudWatchLogsClient(utils.BaseClient):
         Args:
             log_group_name: the name of the log group or, if stack_name is passed in kwargs, resource
                     name of lambda (as set in SAM template) whose logs we would like to query
-            query_string: String to query. If a log message contains query_string, it will be returned
+            query_string: String to query or list of substrings to query. If query_string is a list,
+                    then conditional_operator can be passed to change query from AND (default) to OR.
             timeout: Give up after this many seconds
             **kwargs:
                 stack_name (str): Thiscovery stack name; use only if log_group_name is an
                         AWS lambda resource name
                 earliest_log (float): Utc timestamp; any log entries older than this value
                         will be ignored
+                conditional_operator (str): AND or OR to control querying behaviour when query_string contains
+                        more than one substring
 
         Returns:
             First found log message containing query_string if one is found;
@@ -194,7 +197,32 @@ class CloudWatchLogsClient(utils.BaseClient):
             for event in latest_stream["events"]:
                 if event["timestamp"] < earliest_log:
                     break
-                if query_string in event["message"]:
-                    return event["message"]
+                message = event["message"]
+                if isinstance(query_string, list):
+                    operator = kwargs.get("conditional_operator", "AND")
+                    if operator == "OR":
+                        for substring in query_string:
+                            if substring in message:
+                                return message
+                    elif operator == "AND":
+                        matched_substrings = 0
+                        for substring in query_string:
+                            if substring in message:
+                                matched_substrings += 1
+                        if matched_substrings == len(query_string):
+                            return message
+                    else:
+                        raise utils.DetailedValueError(
+                            f"Unsupported conditional_operator value ({operator}). Valid values are 'AND' or 'OR'",
+                            details=dict(),
+                        )
+                elif isinstance(query_string, str):
+                    if query_string in message:
+                        return message
+                else:
+                    raise utils.DetailedValueError(
+                        f"Unsupported query_string. query_string must be a str or list, not {type(query_string)}",
+                        details=dict(),
+                    )
             time.sleep(1)
             attempts += 1
