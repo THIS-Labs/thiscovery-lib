@@ -21,7 +21,7 @@ was written before thiscovery-lib was created. Moving the methods written in
 thiscovery-core to this file is the goal of US 4590
 """
 import time
-from typing import Tuple, Dict, Any, Optional, Union
+from typing import List, Tuple, Dict, Any, Optional, Union
 
 import thiscovery_lib.utilities as utils
 
@@ -162,7 +162,11 @@ class CloudWatchLogsClient(utils.BaseClient):
         )
 
     def find_in_log_message(
-        self, log_group_name: str, query_string: Union[str, list], timeout=10, **kwargs
+        self,
+        log_group_name: str,
+        query_string: Union[str, List[str]],
+        timeout=10,
+        **kwargs,
     ) -> Optional[str]:
         """
         Looks up query_string in the latest logged events
