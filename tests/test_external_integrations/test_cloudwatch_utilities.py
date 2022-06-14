@@ -82,7 +82,7 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
     def test_find_in_log_message_query_list_ok(self):
         result = self.cwl_client.find_in_log_message(
             log_group_name="ping",
-            query_string=[self.expected_log_string, "function result"],
+            query_string=[self.expected_log_string, "Function result"],
             stack_name="thiscovery-core",
         )
         self.assertIsInstance(result, str)
