@@ -31,6 +31,29 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             env_override=local.dev_config.UNIT_TEST_NAMESPACE[1:-1],
         )
 
+    def test_get_user_by_user_id_ok(self):
+        result = self.core_client.get_user_by_user_id(
+            "1cbe9aad-b29f-46b5-920e-b4c496d42515"
+        )
+        expected_user = {
+            "auth0_id": None,
+            "avatar_string": "EE",
+            "country_code": "GB",
+            "country_name": "United Kingdom",
+            "created": "2018-08-17T12:10:56.884543+00:00",
+            "crm_id": None,
+            "email": "eddie@email.co.uk",
+            "first_name": "Eddie",
+            "has_demo_project": True,
+            "has_live_project": True,
+            "id": "1cbe9aad-b29f-46b5-920e-b4c496d42515",
+            "last_name": "Eagleton",
+            "modified": "2018-11-02T11:07:33.785406+00:00",
+            "status": None,
+            "title": "Mr",
+        }
+        self.assertEqual(expected_user, result)
+
     def test_get_user_by_email_ok(self):
         result = self.core_client.get_user_by_email(email="delia@email.co.uk")
         self.assertEqual("35224bd5-f8a8-41f6-8502-f96e12d6ddde", result["id"])

@@ -29,6 +29,11 @@ class CoreApiClient(tau.ThiscoveryApiClient):
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
+    def get_user_by_user_id(self, user_id):
+        return utils.aws_get(endpoint_url=f"v1/user/{user_id}", base_url=self.base_url)
+
+    @tau.process_response
+    @tau.check_response(HTTPStatus.OK)
     def get_user_by_email(self, email):
         return utils.aws_get("v1/user", self.base_url, params={"email": email})
 
