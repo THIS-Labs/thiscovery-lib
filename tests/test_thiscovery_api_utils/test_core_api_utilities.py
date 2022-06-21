@@ -75,3 +75,13 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
         self.assertEqual(
             "273b420e-09cb-419c-8b57-b393595dba78", result["project_task_id"]
         )
+
+    def test_patch_user_ok(self):
+        result = self.core_client.patch_user(
+            user_id="d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
+            jsonpatch=[
+                {"op": "replace", "path": "/title", "value": "Sir"},
+                {"op": "replace", "path": "/auth0_id", "value": "new-auth0-id"},
+            ],
+        )
+        self.assertEqual(HTTPStatus.NO_CONTENT, result["statusCode"])

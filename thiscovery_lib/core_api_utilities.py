@@ -50,6 +50,14 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             params={"anon_project_specific_user_id": anon_project_specific_user_id},
         )
 
+    @tau.check_response(HTTPStatus.NO_CONTENT)
+    def patch_user(self, user_id: str, jsonpatch: list):
+        return utils.aws_patch(
+            f"v1/user/{user_id}",
+            self.base_url,
+            request_body=json.dumps(jsonpatch),
+        )
+
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_projects(self):
