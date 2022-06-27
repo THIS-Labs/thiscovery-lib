@@ -16,6 +16,7 @@
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
 import json
+import warnings
 from http import HTTPStatus
 
 import thiscovery_lib.thiscovery_api_utilities as tau
@@ -142,6 +143,10 @@ class CoreApiClient(tau.ThiscoveryApiClient):
 
         Returns:
         """
+        warnings.warn(
+            "This method is deprecated; put a transactional_email event on the thiscovery bus instead",
+            DeprecationWarning,
+        )
         email_dict = {"template_name": template_name, **kwargs}
         if utils.running_unit_tests():
             email_dict["template_name"] = f"NA_{template_name}"
