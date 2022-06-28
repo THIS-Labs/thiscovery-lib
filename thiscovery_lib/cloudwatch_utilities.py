@@ -199,6 +199,11 @@ class CloudWatchLogsClient(utils.BaseClient):
                 log_group_name=log_group_name, **kwargs
             )
             for event in latest_stream["events"]:
+                self.logger.debug(
+                    f"Latest event in stream: "
+                    f"{str(utils.aws_utc_timestamp_to_datetime(latest_stream['events'][-1]['timestamp']))}",
+                    extra={"earliest_log": earliest_log, "query_string": query_string},
+                )
                 if event["timestamp"] < earliest_log:
                     break
                 message = event["message"]

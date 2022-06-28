@@ -219,6 +219,11 @@ def utc_now_timestamp():
     return datetime.datetime.utcnow().timestamp()
 
 
+def aws_utc_timestamp_to_datetime(aws_timestamp):
+    timestamp_in_secs = int(aws_timestamp) / 1000
+    return datetime.datetime.fromtimestamp(timestamp_in_secs)
+
+
 def get_start_time():
     return timer()
 
