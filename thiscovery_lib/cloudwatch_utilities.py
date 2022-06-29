@@ -164,7 +164,9 @@ class CloudWatchLogsClient(utils.BaseClient):
                         AWS lambda resource name
                 limit (int): Maximum number of results to return; default is 20
                 query (str): Complete CloudWatch Logs Insights query
-                query_string (str or list): Substring or list of substrings to be queried
+                query_string (str or list): This can be a string (e.g. "find this") or a list of strings
+                    (e.g. ["find this", "and this"]) to be queried. If it is a list of strings, all strings
+                    must be present in a log message for the log to be included in the results
                 start_time (int): Timestamp for oldest log to query; defaults to 1 hour ago
                 end_time (int): Timestamp for newest log to query; defaults to now
 
