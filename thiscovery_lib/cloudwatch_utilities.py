@@ -20,9 +20,12 @@ IMPORTANT: Please note that thiscovery-core has a cloudwatch_utilities file, whi
 was written before thiscovery-lib was created. Moving the methods written in
 thiscovery-core to this file is the goal of US 4590
 """
+import datetime
 import time
+from http import HTTPStatus
 from typing import List, Tuple, Dict, Any, Optional, Union
 
+import thiscovery_lib.aws_api_utilities as aws_utils
 import thiscovery_lib.utilities as utils
 
 
@@ -126,6 +129,95 @@ class CloudWatchLogsClient(utils.BaseClient):
             logGroupName=log_group_name, logStreamName=log_stream_name, **kwargs
         )
         return result
+
+    @aws_utils.check_response(HTTPStatus.OK)
+    def start_query(self, start_time, end_time, query_string, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.start_query
+        """
+        return self.client.start_query(
+            startTime=start_time, endTime=end_time, queryString=query_string, **kwargs
+        )
+
+    @aws_utils.check_response(HTTPStatus.OK)
+    def get_query_results(self, query_id, **kwargs):
+        """
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/logs.html#CloudWatchLogs.Client.get_query_results
+        """
+        return self.client.get_query_results(queryId=query_id, **kwargs)
+
+    def query_one_log_group(self, log_group_name: str, **kwargs) -> List[List[dict]]:
+        """
+        Uses CloudWatch Logs Insights to query one log group.
+        For documentation on supported query commands, see:
+        https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_QuerySyntax.html
+
+        Use the "query" parameter to pass a complete, formatted query, or the
+        "query_string" parameter to pass a substring or list of substrings to
+        insert in a default query.
+
+        Args:
+            log_group_name: the name of the log group or, if stack_name is passed in kwargs, resource
+                    name of lambda (as set in SAM template) whose logs we would like to query
+            **kwargs:
+                stack_name (str): Thiscovery stack name; use only if log_group_name is an
+                        AWS lambda resource name
+                limit (int): Maximum number of results to return; default is 20
+                query (str): Complete CloudWatch Logs Insights query
+                query_string (str or list): This can be a string (e.g. "find this") or a list of strings
+                    (e.g. ["find this", "and this"]) to be queried. If it is a list of strings, all strings
+                    must be present in a log message for the log to be included in the results
+                start_time (int): Timestamp for oldest log to query; defaults to 1 hour ago
+                end_time (int): Timestamp for newest log to query; defaults to now
+
+        Returns:
+            A list of results. Each result is a list of dictionary representing fields
+        """
+        limit = kwargs.get("limit", 20)
+        query = kwargs.get("query", None)
+        if query is None:
+            try:
+                query_string = kwargs["query_string"]
+            except KeyError:
+                raise utils.DetailedValueError(
+                    "query_one_log_group requires either query_string or query parameters; none were passed",
+                    details={"kwargs": kwargs},
+                )
+            if isinstance(query_string, list):
+                filter_definition = f"@message like /{query_string[0]}/"
+                for substring in query_string[1:]:
+                    filter_definition += f" and @message like /{substring}/"
+            else:
+                filter_definition = f"@message like /{query_string}/"
+            query = (
+                f"fields @timestamp, @message"
+                f" | filter ({filter_definition})"
+                f" | sort @timestamp desc"
+                f" | limit {limit}"
+            )
+
+        log_group_name, kwargs = self.resolve_lambda_log_group_name(
+            log_group_name, **kwargs
+        )
+
+        start_time = kwargs.get(
+            "start_time",
+            int((datetime.datetime.now() - datetime.timedelta(hours=1)).timestamp()),
+        )
+        end_time = kwargs.get("end_time", int(datetime.datetime.now().timestamp()))
+        start_query_response = self.start_query(
+            logGroupName=log_group_name,
+            start_time=start_time,
+            end_time=end_time,
+            query_string=query,
+        )
+        query_id = start_query_response["queryId"]
+        response = None
+        while (response is None) or (response["status"] == "Running"):
+            time.sleep(0.5)
+            response = self.get_query_results(query_id=query_id)
+
+        return response["results"]
 
     def get_latest_log_events(self, log_group_name: str, **kwargs) -> Dict[str, Any]:
         """

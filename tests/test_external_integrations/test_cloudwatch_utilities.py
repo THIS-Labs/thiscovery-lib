@@ -37,6 +37,15 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
         core_api_client = CoreApiClient()
         core_api_client.ping()
 
+    def common_query_results_assertions(self, results):
+        self.assertEqual(1, len(results))
+        message = None
+        for fields_dict in results[0]:
+            if fields_dict["field"] == "@message":
+                message = fields_dict["value"]
+                break
+        self.assertIn(self.expected_log_string, message)
+
     def test_describe_log_streams_ok(self):
         result = self.cwl_client.describe_log_streams(
             log_group_name="ping", stack_name="thiscovery-core"
@@ -142,4 +151,53 @@ class TestCloudWatchLogs(test_utils.BaseTestCase):
                 stack_name="thiscovery-core",
                 timeout=1,
                 conditional_operator="ALL",
+            )
+
+    def test_query_one_log_group_using_query_parameter(self):
+        test_query = (
+            f"fields @timestamp, @message"
+            f" | filter @message like /{self.expected_log_string}/"
+            f" | sort @timestamp desc"
+            f" | limit 1"
+        )
+        results = self.cwl_client.query_one_log_group(
+            log_group_name="ping",
+            query=test_query,
+            stack_name="thiscovery-core",
+        )
+        self.common_query_results_assertions(results)
+
+    def test_query_one_log_group_using_query_string_parameter(self):
+        results = self.cwl_client.query_one_log_group(
+            log_group_name="ping",
+            query_string=self.expected_log_string,
+            stack_name="thiscovery-core",
+            limit=1,
+        )
+        self.common_query_results_assertions(results)
+
+    def test_query_one_log_group_using_list_of_query_strings(self):
+        results = self.cwl_client.query_one_log_group(
+            log_group_name="ping",
+            query_string=["Response", "citizen", "API"],
+            stack_name="thiscovery-core",
+            limit=1,
+        )
+        self.common_query_results_assertions(results)
+
+    def test_query_one_log_group_query_string_not_found(self):
+        results = self.cwl_client.query_one_log_group(
+            log_group_name="ping",
+            query_string="This should not appear in the logs",
+            stack_name="thiscovery-core",
+            limit=1,
+        )
+        self.assertEqual(list(), results)
+
+    def test_query_one_log_group_raises_error_nothing_to_query(self):
+        with self.assertRaises(utils.DetailedValueError):
+            self.cwl_client.query_one_log_group(
+                log_group_name="ping",
+                stack_name="thiscovery-core",
+                limit=1,
             )
