@@ -202,11 +202,24 @@ class CloudWatchLogsClient(utils.BaseClient):
 
         start_time = kwargs.get(
             "start_time",
-            int((datetime.datetime.now() - datetime.timedelta(hours=1)).timestamp() * 1000),
+            int(
+                (datetime.datetime.now() - datetime.timedelta(hours=1)).timestamp()
+                * 1000
+            ),
         )
-        end_time = kwargs.get("end_time", int(datetime.datetime.now().timestamp() * 1000))
+        end_time = kwargs.get(
+            "end_time", int(datetime.datetime.now().timestamp() * 1000)
+        )
 
-        self.logger.debug("Cloudwatch Log Insights query", extra={"query": query, "log_group_name": log_group_name, "start_time": start_time, "end_time": end_time})
+        self.logger.debug(
+            "Cloudwatch Log Insights query",
+            extra={
+                "query": query,
+                "log_group_name": log_group_name,
+                "start_time": start_time,
+                "end_time": end_time,
+            },
+        )
         start_query_response = self.start_query(
             logGroupName=log_group_name,
             start_time=start_time,
@@ -218,7 +231,9 @@ class CloudWatchLogsClient(utils.BaseClient):
         while (response is None) or (response["status"] == "Running"):
             time.sleep(1)
             response = self.get_query_results(query_id=query_id)
-            self.logger.debug("get_query_results response", extra={"response": response})
+            self.logger.debug(
+                "get_query_results response", extra={"response": response}
+            )
 
         return response["results"]
 
