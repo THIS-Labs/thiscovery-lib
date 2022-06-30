@@ -39,6 +39,9 @@ from timeit import default_timer as timer
 from urllib.parse import quote_plus
 
 
+FUNCTION_RESULT_STR = "Function result"
+
+
 # region constants
 def name2namespace(name):
     return f"/{name}/"
@@ -785,7 +788,7 @@ def lambda_wrapper(func):
         )
         result = func(*updated_args, **kwargs)
         logger.info(
-            "Function result",
+            FUNCTION_RESULT_STR,
             extra={
                 "decorated func module": func.__module__,
                 "decorated func name": func.__name__,
