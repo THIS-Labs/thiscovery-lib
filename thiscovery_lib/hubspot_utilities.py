@@ -88,6 +88,12 @@ def hubspot_api_error_handler(func):
 
 
 class HubSpotClient:
+    """
+    HubSpot API client. Some tests in thiscovery-core use this client
+    to check the end result of events put in the thiscovery bus.
+    This is the only reason this client was not moved to thiscovery-crm
+    """
+
     tokens_table_name = "tokens"
     token_item_id = "hubspot"
     expired_token_item_id = "hubspot-expired"
@@ -97,7 +103,7 @@ class HubSpotClient:
     client_secret_name = "client-secret"
 
     def __init__(
-        self, mock_server=False, correlation_id=None, stack_name="thiscovery-core"
+        self, mock_server=False, correlation_id=None, stack_name="thiscovery-crm"
     ):
         self.mock_server = mock_server
         self.logger = get_logger()
@@ -358,7 +364,7 @@ class HubSpotClient:
         Make requests using developer API key and user id instead of usual oAuth2 token
         This is necessary for creating TLE types
         """
-        from api.local.secrets import HUBSPOT_DEVELOPER_APIKEY, HUBSPOT_DEVELOPER_USERID
+        from local.secrets import HUBSPOT_DEVELOPER_APIKEY, HUBSPOT_DEVELOPER_USERID
 
         if self.app_id is None:
             self.get_hubspot_connection_secret()
@@ -480,7 +486,7 @@ class HubSpotClient:
     @staticmethod
     def get_timeline_event_type_id(name: str, correlation_id):
         table_id = get_aws_namespace() + name
-        ddb = ddb_utils.Dynamodb()
+        ddb = ddb_utils.Dynamodb(stack_name="thiscovery-crm")
         item = ddb.get_item("lookups", table_id, correlation_id)
         return item["details"]["hubspot_id"]
 

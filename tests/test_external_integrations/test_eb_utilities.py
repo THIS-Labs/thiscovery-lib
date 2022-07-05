@@ -39,7 +39,6 @@ class TestThiscoveryEvent(test_utils.BaseTestCase):
             "detail_type",
             "event_source",
             "event_time",
-            "id",
         ]
         self.assertCountEqual(expected_keys, list(te.__dict__.keys()))
         self.assertEqual("thiscovery", te.event_source)
@@ -47,9 +46,9 @@ class TestThiscoveryEvent(test_utils.BaseTestCase):
     def test_init_with_optional_attributes_ok(self):
         test_event = {
             **self.min_event,
-            "event_source": "qualtrics",
-            "id": "test_event_id",
+            "source": "qualtrics",
+            "event_time": "test_event_time",
         }
         te = ThiscoveryEvent(event=test_event)
         self.assertEqual("qualtrics", te.event_source)
-        self.assertEqual("test_event_id", te.id)
+        self.assertEqual("test_event_time", te.event_time)

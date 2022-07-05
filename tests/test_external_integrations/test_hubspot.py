@@ -76,7 +76,7 @@ TEST_TLE_TYPE_PROPERTIES = [
 
 def delete_test_users(test_users=[TEST_USER_01], hs_client=None):
     if hs_client is None:
-        hs_client = HubSpotClient()
+        hs_client = HubSpotClient(stack_name="thiscovery-crm")
     for user in test_users:
         u_email = user["email"]
         contact = hs_client.get_hubspot_contact_by_email(u_email)
@@ -89,7 +89,7 @@ class TestHubspotContacts(TestCase):
     @classmethod
     def setUpClass(cls):
         set_running_unit_tests(True)
-        cls.hs_client = HubSpotClient()
+        cls.hs_client = HubSpotClient(stack_name="thiscovery-crm")
 
     @classmethod
     def tearDownClass(cls):
@@ -183,7 +183,7 @@ class TestHubspotClient(TestCase):
     @classmethod
     def setUpClass(cls):
         set_running_unit_tests(True)
-        cls.hs_client = HubSpotClient()
+        cls.hs_client = HubSpotClient(stack_name="thiscovery-crm")
 
     @classmethod
     def tearDownClass(cls):
@@ -294,6 +294,7 @@ class TestHubspotClient(TestCase):
             "access_token",
             "expires_in",
             "refresh_token",
+            "token_type",
         ]
         self.assertCountEqual(expected_keys, list(old_token.keys()))
 
@@ -320,7 +321,9 @@ class TestSingleSendClient(test_utils.BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.hs_client = hs.SingleSendClient(mock_server=True)
+        cls.hs_client = hs.SingleSendClient(
+            mock_server=True, stack_name="thiscovery-crm"
+        )
 
     def test_send_email_ok(self):
         result = self.hs_client.send_email(
