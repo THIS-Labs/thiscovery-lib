@@ -297,6 +297,10 @@ class HubSpotClient:
                     "result": result.text,
                 },
             )
+            if result.status_code == HTTPStatus.UNAUTHORIZED and retry_count <= 1:
+                self.get_new_token_from_hubspot(self.refresh_token)
+                retry_count += 1
+                continue
             if method in ["POST", "PUT", "DELETE"]:
                 if result.status_code in [
                     HTTPStatus.OK,
@@ -304,10 +308,6 @@ class HubSpotClient:
                     HTTPStatus.CREATED,
                 ]:
                     success = True
-                elif result.status_code == HTTPStatus.UNAUTHORIZED and retry_count <= 1:
-                    self.get_new_token_from_hubspot(self.refresh_token)
-                    retry_count += 1
-                    # and loop to retry
                 else:
                     errorjson = {
                         "url": url,
