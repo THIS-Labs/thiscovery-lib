@@ -103,7 +103,7 @@ class HubSpotClient:
     client_secret_name = "client-secret"
 
     def __init__(
-        self, mock_server=False, correlation_id=None, stack_name="thiscovery-core"
+        self, mock_server=False, correlation_id=None, stack_name="thiscovery-crm"
     ):
         self.mock_server = mock_server
         self.logger = get_logger()
