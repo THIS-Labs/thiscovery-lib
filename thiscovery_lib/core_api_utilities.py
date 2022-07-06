@@ -59,6 +59,14 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             request_body=json.dumps(jsonpatch),
         )
 
+    @tau.check_response(HTTPStatus.CREATED)
+    def post_user(self, user_dict: dict) -> dict:
+        return utils.aws_post(
+            f"v1/user",
+            self.base_url,
+            request_body=json.dumps(user_dict),
+        )
+
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_projects(self):
