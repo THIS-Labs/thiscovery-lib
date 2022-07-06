@@ -17,9 +17,13 @@
 #
 import local.dev_config  # sets env variables TEST_ON_AWS and AWS_TEST_API
 import local.secrets  # sets env variables THISCOVERY_AFS25_PROFILE and THISCOVERY_AMP205_PROFILE
+
+import random
+import string
+import thiscovery_dev_tools.testing_tools as test_utils
+
 from http import HTTPStatus
 from pprint import pprint
-import thiscovery_dev_tools.testing_tools as test_utils
 from thiscovery_lib.core_api_utilities import CoreApiClient
 
 
@@ -85,3 +89,20 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             ],
         )
         self.assertEqual(HTTPStatus.NO_CONTENT, result["statusCode"])
+
+    def test_post_user_ok(self):
+        # generate random email prefix to avoid database validation errors on subsequent runs
+        letters = string.ascii_lowercase
+        email_prefix = "".join(random.choice(letters) for i in range(10))
+        result = self.core_client.post_user(
+            user_dict={
+                "email": f"test_post_user_{email_prefix}@email.co.uk",
+                "title": "Mr",
+                "first_name": "Steven",
+                "last_name": "Walcorn",
+                "auth0_id": "1234abcd",
+                "country_code": "IT",
+                "status": "new",
+            }
+        )
+        self.assertEqual(HTTPStatus.CREATED, result["statusCode"])
