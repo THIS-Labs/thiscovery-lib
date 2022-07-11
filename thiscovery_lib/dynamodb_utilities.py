@@ -207,6 +207,7 @@ class Dynamodb(utils.BaseClient):
                 "correlation_id": correlation_id,
             },
         )
+        values_expr.update(kwargs.pop("ExpressionAttributeValues", dict()))
         return table.update_item(
             Key=key_json,
             UpdateExpression=update_expr,
