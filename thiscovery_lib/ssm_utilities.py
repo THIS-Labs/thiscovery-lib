@@ -51,7 +51,10 @@ class SsmClient(utils.BaseClient):
         assert (
             response["ResponseMetadata"]["HTTPStatusCode"] == HTTPStatus.OK
         ), f"Call to SSM client failed with response: {response}"
-        return json.loads(response["Parameter"]["Value"])
+        try:
+            return json.loads(response["Parameter"]["Value"])
+        except json.JSONDecodeError:
+            return response["Parameter"]["Value"]
 
     def get_parameters(self, names: list) -> dict[str, list]:
         """
