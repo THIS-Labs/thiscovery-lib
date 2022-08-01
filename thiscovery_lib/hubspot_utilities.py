@@ -50,6 +50,11 @@ TASK_SIGNUP_TLE_TYPE_NAME = "task-signup"
 
 # region decorators
 def hubspot_api_error_handler(func):
+    """
+    Handles status codes returned by functions that call the HubSpot API.
+    Raises an exception unless the returned status is HTTPStatus.NO_CONTENT
+    """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         status_code = func(*args, **kwargs)

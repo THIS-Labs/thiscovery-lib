@@ -19,6 +19,18 @@ import functools
 
 
 def check_response(*expected_status_codes):
+    """
+    Checks that a call to a boto3 client method returned an expected status code.
+    Raises an AssertionError if the returned status code is unexpected.
+
+    Args:
+        *expected_status_codes (tuple): status codes that should NOT lead to an
+            exception
+
+    Returns:
+        The response of the decorated method
+    """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):

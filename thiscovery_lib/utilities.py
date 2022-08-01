@@ -722,7 +722,12 @@ def get_secret(secret_name, namespace_override=None):
 # region decorators
 def api_error_handler(func):
     """
-    Error handler decorator for thiscovery API endpoints. Use with lambda_wrapper as the outer decorator. E.g.:
+    Error handler decorator for thiscovery API endpoints.
+    Ensures an AWS lambda function will complete successfully
+    and return a response. Raised exceptions are logged as
+    errors and will therefore still trigger Epsagon alarms.
+
+    Use with lambda_wrapper as the outer decorator. E.g.:
         @lambda_wrapper
         @api_error_handler
         def decorated_function():
@@ -766,6 +771,11 @@ def api_error_handler(func):
 
 
 def lambda_wrapper(func):
+    """
+    Decorator for thiscovery AWS lambdas. Logs the input and
+    output of the decorated lambda.
+    """
+
     @functools.wraps(func)
     def thiscovery_lambda_wrapper(*args, **kwargs):
         logger = get_logger()
