@@ -55,9 +55,10 @@ class EventbridgeClient(utils.BaseClient):
         return self.client.put_events(Entries=entries)
 
 
-class BaseEvent:
+class ThiscoveryEvent:
     def __init__(self, event):
         """
+
         Args:
             event (dict): must contain detail-type and detail (a json-serializable version of event details). It can optionally contain:
                             event_time (string in iso format) - if this is omitted creation time of entity will be used
@@ -83,14 +84,6 @@ class BaseEvent:
         self.event_source = event.get("source", "thiscovery")
         self.event_time = event.get("event_time", str(utils.now_with_tz()))
 
-    def put_event(self):
+    def put_event(self, event_bus_name="thiscovery-event-bus"):
         ebc = EventbridgeClient()
-        return ebc.put_event(self, event_bus_name=self.event_bus_name)
-
-
-class ThiscoveryEvent(BaseEvent):
-    event_bus_name = "thiscovery-event-bus"
-
-
-class Auth0Event(BaseEvent):
-    event_bus_name = "auth0-event-bus"
+        return ebc.put_event(self, event_bus_name)

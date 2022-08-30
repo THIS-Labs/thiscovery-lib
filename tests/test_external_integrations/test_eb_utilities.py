@@ -21,12 +21,12 @@ import thiscovery_dev_tools.testing_tools as test_utils
 
 import thiscovery_lib.utilities as utils
 from thiscovery_lib import dynamodb_utilities as ddb_utils
-from thiscovery_lib.eb_utilities import Auth0Event, ThiscoveryEvent
+from thiscovery_lib.eb_utilities import ThiscoveryEvent
 
 from pprint import pprint
 
 
-class TestEvents(test_utils.BaseTestCase):
+class TestThiscoveryEvent(test_utils.BaseTestCase):
     min_event = {
         "detail-type": "test_event",
         "detail": {"description": "this is a test event"},
@@ -52,13 +52,3 @@ class TestEvents(test_utils.BaseTestCase):
         te = ThiscoveryEvent(event=test_event)
         self.assertEqual("qualtrics", te.event_source)
         self.assertEqual("test_event_time", te.event_time)
-
-    def test_thiscovery_put_event(self):
-        te = ThiscoveryEvent(event=self.min_event)
-        result = te.put_event()
-        self.assertEqual(result["ResponseMetadata"]["HTTPStatusCode"], 200)
-
-    def test_auth0_put_event(self):
-        te = Auth0Event(event=self.min_event)
-        result = te.put_event()
-        self.assertEqual(result["ResponseMetadata"]["HTTPStatusCode"], 200)
