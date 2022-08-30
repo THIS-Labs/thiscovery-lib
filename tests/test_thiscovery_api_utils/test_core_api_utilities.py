@@ -55,6 +55,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             "modified": "2018-11-02T11:07:33.785406+00:00",
             "status": None,
             "title": "Mr",
+            "last_login": "2018-08-17T12:10:56.833885+00:00",
         }
         self.assertEqual(expected_user, result)
 
