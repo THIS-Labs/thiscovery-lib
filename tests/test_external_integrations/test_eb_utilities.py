@@ -52,3 +52,12 @@ class TestThiscoveryEvent(test_utils.BaseTestCase):
         te = ThiscoveryEvent(event=test_event)
         self.assertEqual("qualtrics", te.event_source)
         self.assertEqual("test_event_time", te.event_time)
+
+    def test_put_event(self):
+        thiscovery_event = ThiscoveryEvent(event=self.min_event)
+        result = thiscovery_event.put_event()
+        self.assertEqual(result["ResponseMetadata"]["HTTPStatusCode"], 200)
+
+        auth0_event = ThiscoveryEvent(event=self.min_event)
+        result = auth0_event.put_event("auth0-event-bus")
+        self.assertEqual(result["ResponseMetadata"]["HTTPStatusCode"], 200)

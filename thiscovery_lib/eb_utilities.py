@@ -84,6 +84,6 @@ class ThiscoveryEvent:
         self.event_source = event.get("source", "thiscovery")
         self.event_time = event.get("event_time", str(utils.now_with_tz()))
 
-    def put_event(self):
+    def put_event(self, event_bus_name="thiscovery-event-bus"):
         ebc = EventbridgeClient()
-        return ebc.put_event(self)
+        return ebc.put_event(self, event_bus_name)
