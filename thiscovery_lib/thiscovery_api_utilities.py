@@ -39,6 +39,18 @@ class ThiscoveryApiClient:
 
 
 def check_response(*expected_status_codes):
+    """
+    Checks that a call to a thiscovery API client method returned an expected status code.
+    Raises an AssertionError if the returned status code is unexpected.
+
+    Args:
+        *expected_status_codes (tuple): status codes that should NOT lead to an
+            exception
+
+    Returns:
+        The response of the decorated method
+    """
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -55,6 +67,14 @@ def check_response(*expected_status_codes):
 
 
 def process_response(func):
+    """
+    Processes the response of a call to a thiscovery API client method
+    so that only the body of the response is decoded form json and returned
+
+    Returns:
+        The json-decoded body of the response of the decorated method
+    """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         response = func(*args, **kwargs)
