@@ -2,10 +2,13 @@
 
 ## Purpose
 
-Library of clients and utilities used by thiscovery AWS lambdas, 
-admin scripts and other Python code.
+Library of clients and utilities used by thiscovery AWS lambdas, admin scripts 
+and other Python code.
 
 ## Installation
+
+This library should not be deployed. Instead, it should be installed using `pip`
+into the env of other stacks.
 
 Run the command:
 
