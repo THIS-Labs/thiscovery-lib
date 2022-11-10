@@ -29,7 +29,7 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         return utils.aws_get("v1/ping", self.base_url)
 
     @tau.process_response
-    @tau.check_response((HTTPStatus.OK, HTTPStatus.NOT_FOUND))
+    @tau.check_response(HTTPStatus.OK, HTTPStatus.NOT_FOUND)
     def get_user_by_user_id(self, user_id):
         return utils.aws_get(endpoint_url=f"v1/user/{user_id}", base_url=self.base_url)
 
