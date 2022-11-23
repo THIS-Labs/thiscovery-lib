@@ -43,10 +43,11 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         user = self.get_user_by_email(email=email)
         return user["id"]
 
-    @tau.check_response(HTTPStatus.OK, HTTPStatus.NOT_FOUND)
+    @tau.process_response
+    @tau.check_response(HTTPStatus.OK)
     def get_user_by_anon_project_specific_user_id(self, anon_project_specific_user_id):
         return utils.aws_get(
-            "v1/userv2",
+            "v1/user",
             self.base_url,
             params={"anon_project_specific_user_id": anon_project_specific_user_id},
         )
