@@ -30,7 +30,9 @@ class CoreApiClient(tau.ThiscoveryApiClient):
 
     @tau.check_response(HTTPStatus.OK, HTTPStatus.NOT_FOUND)
     def get_user_by_user_id(self, user_id):
-        return utils.aws_get(endpoint_url=f"v1/user/{user_id}", base_url=self.base_url)
+        return utils.aws_get(
+            endpoint_url=f"v1/userv2/{user_id}", base_url=self.base_url
+        )
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
@@ -44,7 +46,7 @@ class CoreApiClient(tau.ThiscoveryApiClient):
     @tau.check_response(HTTPStatus.OK, HTTPStatus.NOT_FOUND)
     def get_user_by_anon_project_specific_user_id(self, anon_project_specific_user_id):
         return utils.aws_get(
-            "v1/user",
+            "v1/userv2",
             self.base_url,
             params={"anon_project_specific_user_id": anon_project_specific_user_id},
         )
