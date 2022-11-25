@@ -18,6 +18,7 @@
 import local.dev_config  # sets env variables TEST_ON_AWS and AWS_TEST_API
 import local.secrets  # sets env variables THISCOVERY_AFS25_PROFILE and THISCOVERY_AMP205_PROFILE
 
+import json
 import random
 import string
 import thiscovery_dev_tools.testing_tools as test_utils
@@ -57,7 +58,15 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             "title": "Mr",
             "last_login": "2018-08-17T12:10:56.833885+00:00",
         }
-        self.assertEqual(expected_user, result)
+        expected_status_code = HTTPStatus.OK
+        self.assertDictEqual(expected_user, json.loads(result["body"]))
+        self.assertEqual(expected_status_code, result["statusCode"])
+
+    def test_get_user_by_user_id_not_found(self):
+        result = self.core_client.get_user_by_user_id(
+            "1cbe9aad-b29f-46b5-920e-b4c496d42516"
+        )
+        self.assertEqual(HTTPStatus.NOT_FOUND, result["statusCode"])
 
     def test_get_user_by_email_ok(self):
         result = self.core_client.get_user_by_email(email="delia@email.co.uk")
@@ -72,6 +81,12 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             anon_project_specific_user_id="1a03cb39-b669-44bb-a69e-98e6a521d758"
         )
         self.assertEqual("altha@email.co.uk", result["email"])
+
+    def test_get_user_by_anon_project_specific_user_id_not_found(self):
+        with self.assertRaises(AssertionError):
+            self.core_client.get_user_by_anon_project_specific_user_id(
+                anon_project_specific_user_id="1a03cb39-b669-44bb-a69e-98e6a521d757"
+            )
 
     def test_get_user_task_from_anon_user_task_id_ok(self):
         result = self.core_client.get_user_task_from_anon_user_task_id(
