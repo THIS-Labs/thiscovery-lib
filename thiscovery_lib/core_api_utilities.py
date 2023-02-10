@@ -140,6 +140,12 @@ class CoreApiClient(tau.ThiscoveryApiClient):
                 params={"anon_user_task_id": anon_user_task_id},
             )
 
+    @tau.check_response(HTTPStatus.CREATED)
+    def create_user_task(self, user_task_data):
+        return utils.aws_request(
+            "POST", "v1/usertask", self.base_url, data=json.dumps(user_task_data)
+        )
+
     @tau.check_response(HTTPStatus.NO_CONTENT, HTTPStatus.METHOD_NOT_ALLOWED)
     def send_transactional_email(self, template_name, **kwargs):
         """
