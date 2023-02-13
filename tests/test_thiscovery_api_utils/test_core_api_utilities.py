@@ -122,3 +122,29 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             }
         )
         self.assertEqual(HTTPStatus.CREATED, result["statusCode"])
+
+    def test_create_user_task(self):
+        # Create a new user so that this test won't break if run multiple
+        # times (which happens if you use a hardcoded user id).
+        letters = string.ascii_lowercase
+        email_prefix = "".join(random.choice(letters) for i in range(10))
+        result = self.core_client.post_user(
+            user_dict={
+                "email": f"test_post_user_{email_prefix}@email.co.uk",
+                "title": "Mr",
+                "first_name": "Steven",
+                "last_name": "Walcorn",
+                "auth0_id": "1234abcd",
+                "country_code": "IT",
+                "status": "new",
+            }
+        )
+
+        user_task_data = {
+            "user_id": json.loads(result.get("body")).get("id"),
+            "project_task_id": "f60d5204-57c1-437f-a085-1943ad9d174f",
+            "consented": "2018-07-19 16:16:56.087895+01",
+            "display_method": "iframe",
+        }
+        result = self.core_client.create_user_task(user_task_data)
+        self.assertEqual(HTTPStatus.CREATED, result["statusCode"])
