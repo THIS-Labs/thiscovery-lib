@@ -19,6 +19,7 @@ setuptools.setup(
         "requests",
         "simplejson",
         "validators",
+        "sendgrid",
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
