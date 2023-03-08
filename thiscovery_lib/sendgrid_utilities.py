@@ -51,3 +51,5 @@ class SendGridClient:
             raise EmailError(
                 f"Unexpected status code: {response.status_code}. We received this from SendGrid: {response.body}"
             )
+
+        return response
