@@ -1,10 +1,9 @@
+from http import HTTPStatus
+
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 from thiscovery_lib.utilities import get_secret
-
-
-BASE_API_ENDPOINT = "https://api.sendgrid.com/v3"
 
 
 class EmailError(Exception):
@@ -34,8 +33,8 @@ class SendGridClient:
         """
         mail = Mail()
         mail.add_to((sending_data["email"], sending_data["name"]))
-        mail.from_email = ("thiscovery@thisinstitute.cam.ac.uk", "thiscovery")
-        mail.reply_to = ("thiscovery@thisinstitute.cam.ac.uk", "thiscovery")
+        mail.from_email = sending_data["from_email"]
+        mail.reply_to = sending_data["reply_to"]
         mail.template_id = template_id
         mail.dynamic_template_data = template_data
 
@@ -47,7 +46,7 @@ class SendGridClient:
     def send_email(self):
         response = self.sendgrid_api_client.send(self.mail)
 
-        if response.status_code != 202:
+        if response.status_code != HTTPStatus.ACCEPTED:
             raise EmailError(
                 f"Unexpected status code: {response.status_code}. We received this from SendGrid: {response.body}"
             )
