@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, Cc, Bcc
 
 from thiscovery_lib.utilities import get_secret
 
@@ -33,6 +33,15 @@ class SendGridClient:
         """
         mail = Mail()
         mail.add_to((sending_data["email"], sending_data["name"]))
+
+        ccs = sending_data.get("cc", [])
+        for cc in ccs:
+            mail.add_cc(Cc(cc))
+
+        bccs = sending_data.get("bcc", [])
+        for bcc in bccs:
+            mail.add_cc(Bcc(bcc))
+
         mail.from_email = sending_data["from_email"]
         mail.reply_to = sending_data["reply_to"]
         mail.template_id = template_id
