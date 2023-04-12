@@ -42,6 +42,8 @@ class TestSendGridClient(TestCase):
                 "name": "test",
                 "from_email": ("thiscovery@thisinstitute.cam.ac.uk", "thiscovery"),
                 "reply_to": ("thiscovery@thisinstitute.cam.ac.uk", "thiscovery"),
+                "bcc": ["test@example.org"],
+                "cc": ["test2@example.org"],
             },
             template_data={"first_name": "Test"},
             template_id="d-123",
@@ -49,6 +51,8 @@ class TestSendGridClient(TestCase):
 
         assert mail.personalizations[0].tos[0].get("email") == "test@example.org"
         assert mail.personalizations[0].tos[0].get("name") == "test"
+        assert mail.personalizations[0].bccs[0].get("email") == "test@example.org"
+        assert mail.personalizations[0].ccs[0].get("email") == "test2@example.org"
         assert mail.from_email.email == "thiscovery@thisinstitute.cam.ac.uk"
         assert mail.from_email.name == "thiscovery"
         assert mail.reply_to.email == "thiscovery@thisinstitute.cam.ac.uk"
