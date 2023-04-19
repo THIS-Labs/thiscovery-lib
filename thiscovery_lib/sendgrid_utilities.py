@@ -42,6 +42,12 @@ class SendGridClient:
         for bcc in bccs:
             mail.add_cc(Bcc(bcc))
 
+        # Sendgrid templates have a bug which means that
+        # sender template variables don't work, so we
+        # insert them here from a secret.
+        sender_data = get_secret("sendgrid-sender-data")
+        template_data.update(sender_data)
+
         mail.from_email = sending_data["from_email"]
         mail.reply_to = sending_data["reply_to"]
         mail.template_id = template_id
