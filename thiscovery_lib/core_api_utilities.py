@@ -190,13 +190,13 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         return utils.aws_get(
             "v1/list-group-email-despatch-users",
             self.base_url,
-            params={"group_email_despatch_id": group_email_despatch_id},
+            params={"group_email_despatch": group_email_despatch_id},
         )
 
     def list_group_email_despatch_users(self, group_email_despatch_id):
         """
         Args:
-            group_email_despatch_id (uuid) : group_email_despatch_id
+            group_email_despatch_id: uuid of group_email_despatch_id
         Returns:
             A list of user_ids
         """

@@ -150,7 +150,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
         self.assertEqual(HTTPStatus.CREATED, result["statusCode"])
 
     def test_list_group_email_despatch_users_ok(self):
-        result = self.core_client.list_group_email_despatch_users(
+        user_ids = self.core_client.list_group_email_despatch_users(
             "1a03cb39-b669-44bb-a69e-98e6a521d758"
         )
-        self.assertEqual("altha@email.co.uk", result["email"])
+        self.assertEqual(["6c92808d-cce7-4d11-90e1-da3321b90acc"], user_ids)
