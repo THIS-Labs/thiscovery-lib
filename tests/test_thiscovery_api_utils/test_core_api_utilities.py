@@ -151,6 +151,11 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
 
     def test_list_group_email_despatch_users_ok(self):
         user_ids = self.core_client.list_group_email_despatch_users(
-            "1a03cb39-b669-44bb-a69e-98e6a521d758"
+            "24ae97ba-f79a-4088-9609-b6aac53f2138"
         )
-        self.assertEqual(["6c92808d-cce7-4d11-90e1-da3321b90acc"], user_ids)
+        self.assertEqual(
+            [
+                "1a03cb39-b669-44bb-a69e-98e6a521d758",
+                "cc694281-91a1-4bad-b46f-9b69e71503bb",
+             ],
+            user_ids)
