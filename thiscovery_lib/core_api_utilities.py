@@ -68,6 +68,22 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             request_body=json.dumps(user_dict),
         )
 
+    @tau.check_response(HTTPStatus.NO_CONTENT)
+    def patch_group_email_despatch(self, group_email_despatch_id: str, jsonpatch: list):
+        return utils.aws_patch(
+            f"v1/groupemaildespatch/{group_email_despatch_id}",
+            self.base_url,
+            request_body=json.dumps(jsonpatch),
+        )
+
+    @tau.check_response(HTTPStatus.CREATED)
+    def post_group_email_despatch(self, group_email_despatch_dict: dict) -> dict:
+        return utils.aws_post(
+            f"v1/groupemaildespatch",
+            self.base_url,
+            request_body=json.dumps(group_email_despatch_dict),
+        )
+
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def get_projects(self):

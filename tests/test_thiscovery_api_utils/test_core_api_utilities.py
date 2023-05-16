@@ -149,6 +149,29 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
         result = self.core_client.create_user_task(user_task_data)
         self.assertEqual(HTTPStatus.CREATED, result["statusCode"])
 
+    def test_create_and_update_email_despatch(self):
+        result = self.core_client.post_group_email_despatch(
+            group_email_despatch_dict={
+                "project_id": "97406352-d482-428e-abd1-a3e0b6f550e4",
+                "sender_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
+                "template_id": "unittests_email_template_3",
+                "description": "Test email despatch",
+            }
+        )
+
+        assert result["statusCode"] == HTTPStatus.CREATED
+
+        id = json.loads(result["body"])["id"]
+
+        result = self.core_client.patch_group_email_despatch(
+            group_email_despatch_id=id,
+            jsonpatch=[
+                {"op": "replace", "path": "/description", "value": "This is a test"}
+            ],
+        )
+
+        assert result["statusCode"] == HTTPStatus.NO_CONTENT
+
     def test_list_group_email_despatch_users_ok(self):
         user_ids = self.core_client.list_group_email_despatch_users(
             "24ae97ba-f79a-4088-9609-b6aac53f2138"
@@ -157,5 +180,6 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             [
                 "1a03cb39-b669-44bb-a69e-98e6a521d758",
                 "cc694281-91a1-4bad-b46f-9b69e71503bb",
-             ],
-            user_ids)
+            ],
+            user_ids,
+        )
