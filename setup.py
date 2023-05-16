@@ -23,7 +23,7 @@ setuptools.setup(
     ],
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/THIS-Institute/thiscovery-lib",
+    url="https://github.com/THIS-Labs/thiscovery-lib",
     package_data={
         "thiscovery_lib": ["countries.json"],
     },

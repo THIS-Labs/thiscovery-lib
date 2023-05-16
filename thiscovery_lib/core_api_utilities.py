@@ -199,3 +199,25 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         raise utils.ObjectDoesNotExistError(
             f"Project task {project_task_id} not found", details={}
         )
+
+    @tau.process_response
+    @tau.check_response(HTTPStatus.OK)
+    def _list_group_email_despatch_users(self, group_email_despatch_id):
+        return utils.aws_get(
+            "v1/list-group-email-despatch-users",
+            self.base_url,
+            params={"group_email_despatch": group_email_despatch_id},
+        )
+
+    def list_group_email_despatch_users(self, group_email_despatch_id):
+        """
+        Args:
+            group_email_despatch_id: uuid of group_email_despatch_id
+        Returns:
+            A list of user_ids
+        """
+        user_ids = self._list_group_email_despatch_users(
+            group_email_despatch_id=group_email_despatch_id
+        )
+
+        return user_ids
