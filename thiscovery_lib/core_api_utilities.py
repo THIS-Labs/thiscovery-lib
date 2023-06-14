@@ -228,6 +228,21 @@ class CoreApiClient(tau.ThiscoveryApiClient):
 
         return user_ids
 
+    @tau.check_response(HTTPStatus.OK)
+    def list_group_email_despatch_users(self, group_email_despatch_id):
+        """
+        Args:
+            group_email_despatch_id: uuid of group_email_despatch_id
+        Returns:
+            A group email despatch
+        """
+
+        return utils.aws_get(
+            "v1/get-group-email-despatch",
+            self.base_url,
+            params={"group_email_despatch": group_email_despatch_id},
+        )
+
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
     def list_user_lists(self):
