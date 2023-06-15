@@ -223,7 +223,7 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         return user_ids
 
     @tau.check_response(HTTPStatus.OK)
-    def list_group_email_despatch_users(self, group_email_despatch_id):
+    def get_group_email_despatch(self, group_email_despatch_id):
         """
         Args:
             group_email_despatch_id: uuid of group_email_despatch_id
