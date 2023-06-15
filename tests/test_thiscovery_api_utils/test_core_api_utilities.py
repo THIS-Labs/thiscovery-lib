@@ -204,6 +204,27 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             user_ids,
         )
 
+    def test_get_group_email_despatch_ok(self):
+        ged = self.core_client.get_group_email_despatch(
+            "eb368275-08d3-4e7a-9b75-b66c79e551cb"
+        )
+        self.assertEqual(
+            {
+                "id": "eb368275-08d3-4e7a-9b75-b66c79e551cb",
+                "created": "2023-05-18T08:28:09.666194+00:00",
+                "modified": "2023-05-18T08:28:28.846819+00:00",
+                "send_start_date": "2023-05-18T08:27:48+00:00",
+                "send_end_date": "2023-05-18T08:27:50+00:00",
+                "scheduled_date": "2023-05-18T08:27:52+00:00",
+                "template_id": "previous_email",
+                "template_params": None,
+                "description": "previous_email",
+                "project_id": "ce36d4d9-d3d3-493f-98e4-04f4b29ccf49",
+                "sender_id": "8518c7ed-1df4-45e9-8dc4-d49b57ae0663"
+            },
+            ged,
+        )
+
     def test_list_user_lists(self):
         results = self.core_client.list_user_lists()
         assert len(results) > 0
