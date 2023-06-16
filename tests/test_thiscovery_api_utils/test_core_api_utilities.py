@@ -183,3 +183,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             ],
             user_ids,
         )
+
+    def test_list_user_lists(self):
+        results = self.core_client.list_user_lists()
+        assert len(results) > 0

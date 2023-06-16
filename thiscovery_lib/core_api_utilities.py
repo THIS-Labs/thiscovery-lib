@@ -221,3 +221,8 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         )
 
         return user_ids
+
+    @tau.process_response
+    @tau.check_response(HTTPStatus.OK)
+    def list_user_lists(self):
+        return utils.aws_get("v1/userlist", self.base_url, params={})
