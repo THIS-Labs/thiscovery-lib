@@ -863,4 +863,8 @@ def aws_patch(endpoint_url, base_url, request_body):
     )
 
 
+def aws_delete(endpoint_url, base_url):
+    return aws_request(method="DELETE", endpoint_url=endpoint_url, base_url=base_url)
+
+
 # endregion
