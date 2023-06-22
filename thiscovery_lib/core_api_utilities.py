@@ -82,6 +82,20 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             f"v1/groupemaildespatch/{group_email_despatch_id}", self.base_url
         )
 
+    @tau.check_response(HTTPStatus.OK, HTTPStatus.NOT_FOUND)
+    def get_group_email_despatch(self, group_email_despatch_id):
+        """
+        Args:
+            group_email_despatch_id: uuid of group_email_despatch_id
+        Returns:
+            A group email despatch
+        """
+
+        return utils.aws_get(
+            f"v1/groupemaildespatch/{group_email_despatch_id}",
+            self.base_url,
+        )
+
     @tau.check_response(HTTPStatus.CREATED)
     def post_group_email_despatch(self, group_email_despatch_dict: dict) -> dict:
         return utils.aws_post(
@@ -227,21 +241,6 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         )
 
         return user_ids
-
-    @tau.check_response(HTTPStatus.OK, HTTPStatus.NOT_FOUND)
-    def get_group_email_despatch(self, group_email_despatch_id):
-        """
-        Args:
-            group_email_despatch_id: uuid of group_email_despatch_id
-        Returns:
-            A group email despatch
-        """
-
-        return utils.aws_get(
-            "v1/groupemaildespatch",
-            self.base_url,
-            params={"id": group_email_despatch_id},
-        )
 
     @tau.process_response
     @tau.check_response(HTTPStatus.OK)
