@@ -15,7 +15,7 @@ env:
   EPSAGON_TOKEN: ${{ secrets.EPSAGON_TOKEN }}
   SAM_TEMPLATE: template.yaml
   AWS_REGION: eu-west-1
-  STACK_NAME: thiscovery-crm
+  STACK_NAME: thiscovery-lib
 
 
 jobs:
@@ -42,6 +42,17 @@ jobs:
           afs25_account: ${{ secrets.AFS25_AWS_ACCOUNT }}
           sem86_account: ${{ secrets.SEM86_AWS_ACCOUNT }}
           amp205_account: ${{ secrets.AMP205_AWS_ACCOUNT }}
+
+      - name: Assume the testing role in testing account
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          aws-access-key-id: ${{ env.PIPELINE_USER_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PIPELINE_USER_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.TESTING_ACCOUNT_TEST_ROLE }}
+          role-session-name: ${{ env.STACK_NAME }}-testing
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
 
       - name: Run unit tests
         shell: bash
