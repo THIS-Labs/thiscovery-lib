@@ -31,6 +31,11 @@ jobs:
         with:
           python-version: 3.8
 
+      - name: Install dependencies
+        shell: bash
+        run: |
+          pip install -r requirements.txt
+
       - name: Configure testing environment
         uses: THIS-Labs/actions-configure-test-env@v0.15
         with:
