@@ -238,9 +238,9 @@ class CoreApiClient(tau.ThiscoveryApiClient):
         """
 
         return utils.aws_get(
-            "v1/get-group-email-despatch",
+            "v1/groupemaildespatch",
             self.base_url,
-            params={"group_email_despatch": group_email_despatch_id},
+            params={"id": group_email_despatch_id},
         )
 
     @tau.process_response
