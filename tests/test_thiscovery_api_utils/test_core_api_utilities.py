@@ -30,6 +30,7 @@ import thiscovery_dev_tools.testing_tools as test_utils
 from http import HTTPStatus
 from pprint import pprint
 from thiscovery_lib.core_api_utilities import CoreApiClient
+from thiscovery_lib.utilities import get_environment_name
 
 
 class TestCoreApiUtilities(test_utils.BaseTestCase):
@@ -37,7 +38,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.core_client = CoreApiClient(
-            env_override=local.dev_config.UNIT_TEST_NAMESPACE[1:-1],
+            get_environment_name()
         )
 
     def test_get_user_by_user_id_ok(self):
