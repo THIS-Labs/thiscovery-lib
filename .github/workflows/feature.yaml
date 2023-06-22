@@ -19,33 +19,33 @@ env:
 
 
 jobs:
-  deploy-testing:
-    name: Deploy to test env
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Configure testing environment
-        uses: THIS-Labs/actions-configure-test-env@v0.15
-        with:
-          afs25_account: ${{ secrets.AFS25_AWS_ACCOUNT }}
-          sem86_account: ${{ secrets.SEM86_AWS_ACCOUNT }}
-          amp205_account: ${{ secrets.AMP205_AWS_ACCOUNT }}
-
-      - name: Build
-        uses: THIS-Labs/actions-build-stack@v0.3
-
-      - name: Package
-        uses: THIS-Labs/actions-package-stack@v0.4
-        with:
-          from_env: ${{ env.AWS_TEST_ENV }}
-          to_env: ${{ env.AWS_TEST_ENV }}
-          deployment_role: ${{ env.TESTING_ACCOUNT_DEPLOYMENT_ROLE }}
-          artifacts_bucket: ${{ env.ARTIFACTS_BUCKET }}
-
-      - name: Execute thiscovery deployment via cli
-        run: |
-          thiscovery deploy ${{ env.STACK_NAME }}
+#  deploy-testing:
+#    name: Deploy to test env
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#
+#      - name: Configure testing environment
+#        uses: THIS-Labs/actions-configure-test-env@v0.15
+#        with:
+#          afs25_account: ${{ secrets.AFS25_AWS_ACCOUNT }}
+#          sem86_account: ${{ secrets.SEM86_AWS_ACCOUNT }}
+#          amp205_account: ${{ secrets.AMP205_AWS_ACCOUNT }}
+#
+#      - name: Build
+#        uses: THIS-Labs/actions-build-stack@v0.3
+#
+#      - name: Package
+#        uses: THIS-Labs/actions-package-stack@v0.4
+#        with:
+#          from_env: ${{ env.AWS_TEST_ENV }}
+#          to_env: ${{ env.AWS_TEST_ENV }}
+#          deployment_role: ${{ env.TESTING_ACCOUNT_DEPLOYMENT_ROLE }}
+#          artifacts_bucket: ${{ env.ARTIFACTS_BUCKET }}
+#
+#      - name: Execute thiscovery deployment via cli
+#        run: |
+#          thiscovery deploy ${{ env.STACK_NAME }}
 
   test:
     name: Test on AWS
@@ -84,3 +84,41 @@ jobs:
 
       - name: Run tests
         uses: THIS-Labs/actions-run-tests@v0.1
+
+
+#name: Python application
+#
+#on:
+#  push:
+#    branches: [ "master" ]
+#  pull_request:
+#    branches: [ "master" ]
+#
+#permissions:
+#  contents: read
+#
+#jobs:
+#  build:
+#
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - uses: actions/checkout@v3
+#    - name: Set up Python 3.10
+#      uses: actions/setup-python@v3
+#      with:
+#        python-version: "3.10"
+#    - name: Install dependencies
+#      run: |
+#        python -m pip install --upgrade pip
+#        pip install flake8 pytest
+#        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+#    - name: Lint with flake8
+#      run: |
+#        # stop the build if there are Python syntax errors or undefined names
+#        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+#        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+#        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+#    - name: Test with pytest
+#      run: |
+#        pytest
