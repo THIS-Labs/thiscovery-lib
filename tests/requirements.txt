@@ -2,3 +2,4 @@ https://github.com/THIS-Labs/thiscovery-dev-tools/archive/refs/heads/master.zip
 python-dateutil
 boto3
 epsagon
+requests
