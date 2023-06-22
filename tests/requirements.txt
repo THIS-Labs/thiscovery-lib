@@ -3,3 +3,4 @@ python-dateutil
 boto3
 epsagon
 requests
+simplejson
