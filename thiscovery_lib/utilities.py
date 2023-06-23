@@ -424,8 +424,7 @@ class SsmClient(BaseClient):
 
 class SecretsManager(BaseClient):
     def __init__(self, profile_name=None):
-        super().__init__("secretsmanager", profile_name=profile_name, region_name='eu-west-1')
-
+        super().__init__("secretsmanager", profile_name=profile_name)
     def _prefix_name(self, name, prefix):
         if prefix is None:
             prefix = f"/{super().get_namespace()}/"
@@ -824,9 +823,7 @@ def aws_request(
     headers = {"Content-Type": "application/json"}
 
     if aws_api_key is None:
-        connection_secret = get_secret("aws-connection")
-        print(connection_secret)
-        headers["x-api-key"] = connection_secret["aws-api-key"]
+        headers["x-api-key"] = get_secret("aws-connection")["aws-api-key"]
     else:
         headers["x-api-key"] = aws_api_key
 
