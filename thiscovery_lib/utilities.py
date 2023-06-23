@@ -425,6 +425,7 @@ class SsmClient(BaseClient):
 class SecretsManager(BaseClient):
     def __init__(self, profile_name=None):
         super().__init__("secretsmanager", profile_name=profile_name)
+
     def _prefix_name(self, name, prefix):
         if prefix is None:
             prefix = f"/{super().get_namespace()}/"
