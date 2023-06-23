@@ -15,12 +15,8 @@
 #   A copy of the GNU Affero General Public License is available in the
 #   docs folder of this project.  It is also available www.gnu.org/licenses/
 #
-try:
-    import local.dev_config
-    import local.secrets
-except ModuleNotFoundError:
-    pass
-
+import local.dev_config  # sets env variables TEST_ON_AWS and AWS_TEST_API	try:
+import local.secrets  # sets env variables THISCOVERY_AFS25_PROFILE and THISCOVERY_AMP205_PROFILE
 
 import json
 import random
