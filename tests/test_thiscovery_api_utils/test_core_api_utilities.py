@@ -33,9 +33,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.core_client = CoreApiClient(
-            get_environment_name()
-        )
+        cls.core_client = CoreApiClient(get_environment_name())
 
     def test_get_user_by_user_id_ok(self):
         result = self.core_client.get_user_by_user_id(
@@ -227,7 +225,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
                 "template_params": None,
                 "description": "previous_email",
                 "project_id": "ce36d4d9-d3d3-493f-98e4-04f4b29ccf49",
-                "sender_id": "8518c7ed-1df4-45e9-8dc4-d49b57ae0663"
+                "sender_id": "8518c7ed-1df4-45e9-8dc4-d49b57ae0663",
             },
             json.loads(ged["body"]),
         )
@@ -238,3 +236,15 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
         )
 
         assert ged["statusCode"] == HTTPStatus.NOT_FOUND
+
+    def test_create_user_email_despatch(self):
+        result = self.core_client.create_user_email_despatch(
+            user_email_despatch_data={
+                "user_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
+                "user_task_id": "615ff0e6-0b41-4870-b9db-527345d1d9e5",
+                "group_email_despatch_id": None,
+                "template_id": "participant_consent",
+            }
+        )
+
+        assert result["statusCode"] == HTTPStatus.CREATED
