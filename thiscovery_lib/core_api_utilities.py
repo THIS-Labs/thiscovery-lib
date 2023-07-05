@@ -218,3 +218,11 @@ class CoreApiClient(tau.ThiscoveryApiClient):
     @tau.check_response(HTTPStatus.OK)
     def list_user_lists(self):
         return utils.aws_get("v1/userlist", self.base_url, params={})
+
+    @tau.check_response(HTTPStatus.CREATED)
+    def create_user_email_despatch(self, user_email_despatch_data):
+        return utils.aws_post(
+            "v1/useremaildespatch",
+            self.base_url,
+            request_body=json.dumps(user_email_despatch_data),
+        )
