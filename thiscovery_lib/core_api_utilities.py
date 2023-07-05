@@ -182,34 +182,6 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             "POST", "v1/usertask", self.base_url, data=json.dumps(user_task_data)
         )
 
-    @tau.check_response(HTTPStatus.NO_CONTENT, HTTPStatus.METHOD_NOT_ALLOWED)
-    def send_transactional_email(self, template_name, **kwargs):
-        """
-        Calls the send-transactional-email endpoint. Appends 'NA_' to template_name
-        if running_unit_tests() returns True to prevent unittest emails being sent
-
-        Args:
-            template_name:
-            **kwargs: Either to_recipient_id or to_recipient_email must be present
-
-        Returns:
-        """
-        warnings.warn(
-            "This method is deprecated; put a transactional_email event on the thiscovery bus instead",
-            DeprecationWarning,
-        )
-        email_dict = {"template_name": template_name, **kwargs}
-        if utils.running_unit_tests():
-            email_dict["template_name"] = f"NA_{template_name}"
-        self.logger.debug(
-            "Transactional email API call", extra={"email_dict": email_dict}
-        )
-        return utils.aws_post(
-            "v1/send-transactional-email",
-            self.base_url,
-            request_body=json.dumps(email_dict),
-        )
-
     def get_project_from_project_task_id(self, project_task_id):
         project_list = self.get_projects()
         for project in project_list:
