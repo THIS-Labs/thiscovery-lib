@@ -158,7 +158,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
                 "user_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
                 "user_task_id": "615ff0e6-0b41-4870-b9db-527345d1d9e5",
                 "group_email_despatch_id": None,
-                "template_id": "participant_consent",
+                "template_id": "unittests_email_template_1",
             }
         )
 
@@ -207,7 +207,7 @@ class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
 
         id = json.loads(result["body"])["id"]
 
-        result = self.core_client.patch_user_email_despatch_send_start_date(
+        result = self.core_client.update_group_email_despatch_send_start_date(
             group_email_despatch_id=id
         )
 
@@ -221,35 +221,35 @@ class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
         # this will just throw an AssertionError, instead of returning a 400.
         # This is expected behaviour, so the tests just have to catch the exception.
         with self.assertRaises(AssertionError):
-            self.core_client.patch_user_email_despatch_send_start_date(
+            self.core_client.update_group_email_despatch_send_start_date(
                 group_email_despatch_id=id
             )
 
-    def test_update_group_email_despatch_send_end_date(self):
+    def test_update_group_email_despatch_send_complete_date(self):
         result = self.core_client.post_group_email_despatch(
             group_email_despatch_dict=self.data
         )
 
         assert result["statusCode"] == HTTPStatus.CREATED
-        assert json.loads(result["body"])["send_end_date"] is None
+        assert json.loads(result["body"])["send_complete_date"] is None
 
         id = json.loads(result["body"])["id"]
 
-        result = self.core_client.patch_user_email_despatch_send_end_date(
+        result = self.core_client.update_group_email_despatch_send_complete_date(
             group_email_despatch_id=id
         )
 
         assert result["statusCode"] == HTTPStatus.OK
 
         result = self.core_client.get_group_email_despatch(id)
-        assert json.loads(result["body"])["send_end_date"] is not None
+        assert json.loads(result["body"])["send_complete_date"] is not None
 
-        # Test that it fails if the send_end_date is already set. Because
+        # Test that it fails if the send_complete_date is already set. Because
         # the lambda is wrapped in a decorator that checks the status code,
         # this will just throw an AssertionError, instead of returning a 400.
         # This is expected behaviour, so the tests just have to catch the exception.
         with self.assertRaises(AssertionError):
-            self.core_client.patch_user_email_despatch_send_end_date(
+            self.core_client.update_group_email_despatch_send_complete_date(
                 group_email_despatch_id=id
             )
 
@@ -292,7 +292,7 @@ class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
                 "created": "2023-05-18T08:28:09.666194+00:00",
                 "modified": "2023-05-18T08:28:28.846819+00:00",
                 "send_start_date": "2023-05-18T08:27:48+00:00",
-                "send_end_date": "2023-05-18T08:27:50+00:00",
+                "send_complete_date": "2023-05-18T08:27:50+00:00",
                 "scheduled_date": "2023-05-18T08:27:52+00:00",
                 "template_id": "unittests_email_template_1",
                 "template_params": None,
