@@ -148,14 +148,40 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
         result = self.core_client.create_user_task(user_task_data)
         self.assertEqual(HTTPStatus.CREATED, result["statusCode"])
 
+    def test_list_user_lists(self):
+        results = self.core_client.list_user_lists()
+        assert len(results) > 0
+
+    def test_create_user_email_despatch(self):
+        result = self.core_client.create_user_email_despatch(
+            user_email_despatch_data={
+                "user_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
+                "user_task_id": "615ff0e6-0b41-4870-b9db-527345d1d9e5",
+                "group_email_despatch_id": None,
+                "template_id": "participant_consent",
+            }
+        )
+
+        assert result["statusCode"] == HTTPStatus.CREATED
+
+
+class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.core_client = CoreApiClient(get_environment_name())
+
+    def setUp(self):
+        self.data = {
+            "project_id": "97406352-d482-428e-abd1-a3e0b6f550e4",
+            "sender_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
+            "template_id": "unittests_email_template_3",
+            "description": "Test email despatch",
+        }
+
     def test_create_and_update_email_despatch(self):
         result = self.core_client.post_group_email_despatch(
-            group_email_despatch_dict={
-                "project_id": "97406352-d482-428e-abd1-a3e0b6f550e4",
-                "sender_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
-                "template_id": "unittests_email_template_3",
-                "description": "Test email despatch",
-            }
+            group_email_despatch_dict=self.data
         )
 
         assert result["statusCode"] == HTTPStatus.CREATED
@@ -171,14 +197,65 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
 
         assert result["statusCode"] == HTTPStatus.NO_CONTENT
 
+    def test_update_group_email_despatch_send_start_date(self):
+        result = self.core_client.post_group_email_despatch(
+            group_email_despatch_dict=self.data
+        )
+
+        assert result["statusCode"] == HTTPStatus.CREATED
+        assert json.loads(result["body"])["send_start_date"] is None
+
+        id = json.loads(result["body"])["id"]
+
+        result = self.core_client.patch_user_email_despatch_send_start_date(
+            group_email_despatch_id=id
+        )
+
+        assert result["statusCode"] == HTTPStatus.OK
+
+        result = self.core_client.get_group_email_despatch(id)
+        assert json.loads(result["body"])["send_start_date"] is not None
+
+        # Test that it fails if the send_start_date is already set. Because
+        # the lambda is wrapped in a decorator that checks the status code,
+        # this will just throw an AssertionError, instead of returning a 400.
+        # This is expected behaviour, so the tests just have to catch the exception.
+        with self.assertRaises(AssertionError):
+            self.core_client.patch_user_email_despatch_send_start_date(
+                group_email_despatch_id=id
+            )
+
+    def test_update_group_email_despatch_send_end_date(self):
+        result = self.core_client.post_group_email_despatch(
+            group_email_despatch_dict=self.data
+        )
+
+        assert result["statusCode"] == HTTPStatus.CREATED
+        assert json.loads(result["body"])["send_end_date"] is None
+
+        id = json.loads(result["body"])["id"]
+
+        result = self.core_client.patch_user_email_despatch_send_end_date(
+            group_email_despatch_id=id
+        )
+
+        assert result["statusCode"] == HTTPStatus.OK
+
+        result = self.core_client.get_group_email_despatch(id)
+        assert json.loads(result["body"])["send_end_date"] is not None
+
+        # Test that it fails if the send_end_date is already set. Because
+        # the lambda is wrapped in a decorator that checks the status code,
+        # this will just throw an AssertionError, instead of returning a 400.
+        # This is expected behaviour, so the tests just have to catch the exception.
+        with self.assertRaises(AssertionError):
+            self.core_client.patch_user_email_despatch_send_end_date(
+                group_email_despatch_id=id
+            )
+
     def test_delete_group_email_despatch(self):
         result = self.core_client.post_group_email_despatch(
-            group_email_despatch_dict={
-                "project_id": "97406352-d482-428e-abd1-a3e0b6f550e4",
-                "sender_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
-                "template_id": "unittests_email_template_3",
-                "description": "Test email despatch",
-            }
+            group_email_despatch_dict=self.data
         )
 
         assert result["statusCode"] == HTTPStatus.CREATED
@@ -203,10 +280,6 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             user_ids,
         )
 
-    def test_list_user_lists(self):
-        results = self.core_client.list_user_lists()
-        assert len(results) > 0
-
     def test_get_group_email_despatch_ok(self):
         ged = self.core_client.get_group_email_despatch(
             "eb368275-08d3-4e7a-9b75-b66c79e551cb"
@@ -221,7 +294,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
                 "send_start_date": "2023-05-18T08:27:48+00:00",
                 "send_end_date": "2023-05-18T08:27:50+00:00",
                 "scheduled_date": "2023-05-18T08:27:52+00:00",
-                "template_id": "previous_email",
+                "template_id": "unittests_email_template_1",
                 "template_params": None,
                 "description": "previous_email",
                 "project_id": "ce36d4d9-d3d3-493f-98e4-04f4b29ccf49",
@@ -236,15 +309,3 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
         )
 
         assert ged["statusCode"] == HTTPStatus.NOT_FOUND
-
-    def test_create_user_email_despatch(self):
-        result = self.core_client.create_user_email_despatch(
-            user_email_despatch_data={
-                "user_id": "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
-                "user_task_id": "615ff0e6-0b41-4870-b9db-527345d1d9e5",
-                "group_email_despatch_id": None,
-                "template_id": "participant_consent",
-            }
-        )
-
-        assert result["statusCode"] == HTTPStatus.CREATED

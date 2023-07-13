@@ -76,6 +76,22 @@ class CoreApiClient(tau.ThiscoveryApiClient):
             request_body=json.dumps(jsonpatch),
         )
 
+    @tau.check_response(HTTPStatus.OK)
+    def patch_user_email_despatch_send_start_date(self, group_email_despatch_id: str):
+        return utils.aws_post(
+            f"v1/updategroupemaildespatchstart/{group_email_despatch_id}/",
+            self.base_url,
+            request_body=json.dumps({}),
+        )
+
+    @tau.check_response(HTTPStatus.OK)
+    def patch_user_email_despatch_send_end_date(self, group_email_despatch_id: str):
+        return utils.aws_post(
+            f"v1/updategroupemaildespatchcomplete/{group_email_despatch_id}/",
+            self.base_url,
+            request_body=json.dumps({}),
+        )
+
     @tau.check_response(HTTPStatus.NO_CONTENT)
     def delete_group_email_despatch(self, group_email_despatch_id: str):
         return utils.aws_delete(
