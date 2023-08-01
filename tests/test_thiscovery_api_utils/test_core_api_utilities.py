@@ -159,6 +159,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
                 "user_task_id": "615ff0e6-0b41-4870-b9db-527345d1d9e5",
                 "group_email_despatch_id": None,
                 "template_id": "unittests_email_template_1",
+                "to_recipient_email": "recipient@email.co.uk",
             }
         )
 
@@ -296,7 +297,7 @@ class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
                 "scheduled_date": "2023-05-18T08:27:52+00:00",
                 "template_id": "unittests_email_template_1",
                 "template_params": None,
-                "description": "previous_email",
+                "description": "test_04_previous_email_users",
                 "project_id": "ce36d4d9-d3d3-493f-98e4-04f4b29ccf49",
                 "sender_id": "8518c7ed-1df4-45e9-8dc4-d49b57ae0663",
             },
