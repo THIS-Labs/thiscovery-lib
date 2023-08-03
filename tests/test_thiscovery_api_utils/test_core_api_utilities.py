@@ -159,6 +159,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
                 "user_task_id": "615ff0e6-0b41-4870-b9db-527345d1d9e5",
                 "group_email_despatch_id": None,
                 "template_id": "unittests_email_template_1",
+                "to_recipient_email": "recipient@email.co.uk",
             }
         )
 
