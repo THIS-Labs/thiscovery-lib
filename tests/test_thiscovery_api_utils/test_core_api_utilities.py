@@ -160,6 +160,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
                 "group_email_despatch_id": None,
                 "template_id": "unittests_email_template_1",
                 "to_recipient_email": "recipient@email.co.uk",
+                "client_message_id": "abc123",
             }
         )
 
