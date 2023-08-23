@@ -1,0 +1,4 @@
+coverage
+coverage-badge
+
+https://github.com/THIS-Labs/thiscovery-dev-tools/archive/refs/heads/master.zip

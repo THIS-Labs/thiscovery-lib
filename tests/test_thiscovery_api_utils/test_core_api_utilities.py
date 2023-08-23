@@ -282,6 +282,17 @@ class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
             user_ids,
         )
 
+    def test_list_group_email_despatch_users_with_user_email_despatch_ok(self):
+        user_ids = self.core_client.list_group_email_despatch_users_with_a_user_email_despatch(
+            "c16a76bb-b891-4722-bde2-8d75a7c5de7d"
+        )
+        self.assertEqual(
+            [
+                "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
+            ],
+            user_ids,
+        )
+
     def test_get_group_email_despatch_ok(self):
         ged = self.core_client.get_group_email_despatch(
             "eb368275-08d3-4e7a-9b75-b66c79e551cb"
