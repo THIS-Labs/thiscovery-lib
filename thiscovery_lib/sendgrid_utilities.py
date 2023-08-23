@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Cc, Bcc
+from sendgrid.helpers.mail import Mail, Cc, Bcc, Category
 
 from thiscovery_lib.utilities import get_secret
 
@@ -15,18 +15,20 @@ class SendGridClient:
     Utilitly client for sending email via our SendGrid account.
     """
 
-    def __init__(self, sending_data, template_data, template_id):
+    def __init__(self, sending_data, template_data, template_id, environment):
         """
         args:
             sending_data (dict): contains the email and name of the email receipient
             template_data (dict): contains data used to populate variables in
                 the email template
             template_id (string): the id of the template to use for this email
+            environment (string): the name of the environment the email is being
+                sent from. This is used to categorise emails in SendGrid.
         """
         self.sendgrid_api_client = SendGridAPIClient(self._get_api_key())
-        self.mail = self._create_message(sending_data, template_data, template_id)
+        self.mail = self._create_message(sending_data, template_data, template_id, environment)
 
-    def _create_message(self, sending_data, template_data, template_id):
+    def _create_message(self, sending_data, template_data, template_id, environment):
         """
         Accepts all the same arguments as the __init__ method and uses them to
         build the email which will be sent.
@@ -52,6 +54,7 @@ class SendGridClient:
         mail.reply_to = sending_data["reply_to"]
         mail.template_id = template_id
         mail.dynamic_template_data = template_data
+        mail.add_category(Category(environment))
 
         return mail
 

@@ -21,6 +21,7 @@ class TestSendGridClient(TestCase):
                 },
                 template_data={"first_name": "Test"},
                 template_id="d-123",
+                environment="test",
             )
 
     def test_client(self):
@@ -47,6 +48,7 @@ class TestSendGridClient(TestCase):
             },
             template_data={"first_name": "Test"},
             template_id="d-123",
+            environment="test",
         )
 
         assert mail.personalizations[0].tos[0].get("email") == "test@example.org"
@@ -58,6 +60,7 @@ class TestSendGridClient(TestCase):
         assert mail.reply_to.email == "thiscovery@thisinstitute.cam.ac.uk"
         assert mail.reply_to.name == "thiscovery"
         assert mail.template_id is not None
+        assert mail.categories[0].name == "test"
 
     def test_send_email_error(self):
         with patch(
