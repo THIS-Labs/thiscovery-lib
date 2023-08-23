@@ -1,5 +1,7 @@
 # thiscovery-lib
 
+![Code coverage](coverage.svg)
+
 ## Purpose
 
 Library of clients and utilities used by thiscovery AWS lambdas, admin scripts 
