@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 
 from sendgrid import SendGridAPIClient
@@ -13,22 +14,28 @@ class EmailError(Exception):
 class SendGridClient:
     """
     Utilitly client for sending email via our SendGrid account.
+
+    N.B. In order to use this library, the lambda function which uses it
+    (or the TransactionalEmail class) must set the ENVIRONMENT_NAME environment
+    variable to the name of the environment the email is being sent from.
     """
 
-    def __init__(self, sending_data, template_data, template_id, environment):
+    def __init__(self, sending_data, template_data, template_id):
         """
         args:
             sending_data (dict): contains the email and name of the email receipient
             template_data (dict): contains data used to populate variables in
                 the email template
             template_id (string): the id of the template to use for this email
-            environment (string): the name of the environment the email is being
-                sent from. This is used to categorise emails in SendGrid.
         """
         self.sendgrid_api_client = SendGridAPIClient(self._get_api_key())
-        self.mail = self._create_message(sending_data, template_data, template_id, environment)
+        self.environment = os.environ.get("ENVIRONMENT_NAME")
+        if self.environment is None:
+            raise EmailError("ENVIRONMENT_NAME environment variable must be set")
 
-    def _create_message(self, sending_data, template_data, template_id, environment):
+        self.mail = self._create_message(sending_data, template_data, template_id)
+
+    def _create_message(self, sending_data, template_data, template_id):
         """
         Accepts all the same arguments as the __init__ method and uses them to
         build the email which will be sent.
@@ -54,7 +61,7 @@ class SendGridClient:
         mail.reply_to = sending_data["reply_to"]
         mail.template_id = template_id
         mail.dynamic_template_data = template_data
-        mail.add_category(Category(environment))
+        mail.add_category(Category(self.environment))
 
         return mail
 

@@ -1,3 +1,4 @@
+import os
 from http import HTTPStatus
 
 import local.dev_config
@@ -6,11 +7,13 @@ import local.secrets
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 
+from thiscovery_lib.utilities import namespace2name
 from thiscovery_lib.sendgrid_utilities import EmailError, SendGridClient
 
 
 class TestSendGridClient(TestCase):
     def setUp(self):
+        os.environ["ENVIRONMENT_NAME"] = namespace2name(os.environ["SECRETS_NAMESPACE"])
         with patch("thiscovery_lib.sendgrid_utilities.get_secret"):
             self.sendgrid_client = SendGridClient(
                 sending_data={
@@ -20,8 +23,7 @@ class TestSendGridClient(TestCase):
                     "reply_to": ("thiscovery@thisinstitute.cam.ac.uk", "thiscovery"),
                 },
                 template_data={"first_name": "Test"},
-                template_id="d-123",
-                environment="test",
+                template_id="d-123"
             )
 
     def test_client(self):
@@ -47,8 +49,7 @@ class TestSendGridClient(TestCase):
                 "cc": ["test2@example.org"],
             },
             template_data={"first_name": "Test"},
-            template_id="d-123",
-            environment="test",
+            template_id="d-123"
         )
 
         assert mail.personalizations[0].tos[0].get("email") == "test@example.org"
@@ -60,7 +61,7 @@ class TestSendGridClient(TestCase):
         assert mail.reply_to.email == "thiscovery@thisinstitute.cam.ac.uk"
         assert mail.reply_to.name == "thiscovery"
         assert mail.template_id is not None
-        assert mail.categories[0].name == "test"
+        assert mail.categories[0].name == namespace2name(os.environ["SECRETS_NAMESPACE"])
 
     def test_send_email_error(self):
         with patch(
@@ -72,3 +73,6 @@ class TestSendGridClient(TestCase):
 
             with self.assertRaises(EmailError):
                 self.sendgrid_client.send_email()
+
+    def tearDown(self):
+        os.environ.pop("ENVIRONMENT_NAME")
