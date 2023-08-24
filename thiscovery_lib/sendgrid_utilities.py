@@ -13,7 +13,7 @@ class EmailError(Exception):
 
 class SendGridClient:
     """
-    Utilitly client for sending email via our SendGrid account.
+    Utility client for sending email via our SendGrid account.
 
     N.B. In order to use this library, the lambda function which uses it
     (or the TransactionalEmail class) must set the ENVIRONMENT_NAME environment
