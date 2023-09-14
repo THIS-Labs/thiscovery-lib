@@ -160,6 +160,7 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
                 "group_email_despatch_id": None,
                 "template_id": "unittests_email_template_1",
                 "to_recipient_email": "recipient@email.co.uk",
+                "client_message_id": "abc123",
             }
         )
 
@@ -277,6 +278,17 @@ class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
             [
                 "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
                 "e067ed7b-bc98-454f-9c5e-573e2da5705c",
+            ],
+            user_ids,
+        )
+
+    def test_list_group_email_despatch_users_with_user_email_despatch_ok(self):
+        user_ids = self.core_client.list_group_email_despatch_users_with_a_user_email_despatch(
+            "c16a76bb-b891-4722-bde2-8d75a7c5de7d"
+        )
+        self.assertEqual(
+            [
+                "d1070e81-557e-40eb-a7ba-b951ddb7ebdc",
             ],
             user_ids,
         )
