@@ -30,8 +30,11 @@ def append_country_name_to_list(entity_list):
 
 
 def append_country_name(entity):
-    country_code = entity["country_code"]
+    country_code = entity.get("country_code", "")
     entity["country_name"] = get_country_name(country_code)
+
+    birth_country_code = entity.get("birth_country_code", "")
+    entity["birth_country_name"] = get_country_name(birth_country_code)
 
 
 def load_countries():
@@ -47,7 +50,7 @@ def load_countries():
 
 def get_country_name(country_code):
     try:
-        return countries[country_code]
+        return countries.get(country_code)
     except KeyError as err:
         errorjson = {"country_code": country_code}
         raise DetailedValueError("invalid country code", errorjson)
