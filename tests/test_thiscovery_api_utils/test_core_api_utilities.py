@@ -43,18 +43,22 @@ class TestCoreApiUtilities(test_utils.BaseTestCase):
             "account_completion_status": None,
             "auth0_id": None,
             "avatar_string": "EE",
-            'birth_country_code': None,
-            'birth_sex': None,
-            'birth_year': None,
+            "birth_country_code": None,
+            "birth_country_name": None,
+            "birth_sex": None,
+            "birth_year": None,
             "country_code": "GB",
             "country_name": "United Kingdom",
             "created": "2018-08-17T12:10:56.884543+00:00",
+            "completed_task_count": 2,
             "crm_id": None,
-            'education_status': None,
+            "education_status": None,
             "email": "eddie@email.co.uk",
             "ethnicity": None,
+            "ethnicity_extended": None,
             "first_name": "Eddie",
             "gender_identity": None,
+            "gender_identity_extended": None,
             "has_demo_project": True,
             "has_live_project": True,
             "healthcare_experience": None,
@@ -300,8 +304,10 @@ class TestCoreApiUtilitiesGroupEmailDespatch(test_utils.BaseTestCase):
         )
 
     def test_list_group_email_despatch_users_with_user_email_despatch_ok(self):
-        user_ids = self.core_client.list_group_email_despatch_users_with_a_user_email_despatch(
-            "c16a76bb-b891-4722-bde2-8d75a7c5de7d"
+        user_ids = (
+            self.core_client.list_group_email_despatch_users_with_a_user_email_despatch(
+                "c16a76bb-b891-4722-bde2-8d75a7c5de7d"
+            )
         )
         self.assertEqual(
             [
