@@ -13,7 +13,6 @@ setuptools.setup(
         "boto3",
         "botocore",
         "python-dateutil",
-        "epsagon",
         "jsons",
         "python-json-logger",
         "requests",

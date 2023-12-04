@@ -17,7 +17,6 @@
 #
 import boto3
 import datetime
-import epsagon
 import functools
 import json
 import logging
@@ -56,7 +55,6 @@ def namespace2profile(namespace):
     Maps namespaces in secrets.py to profiles in ~/.aws/credentials
     """
     if not running_on_aws():
-
         try:
             namespace2env_var_name = os.environ["NAMESPACE2ENV_VAR_NAME"]
         except KeyError:
@@ -558,11 +556,6 @@ class ColorHandler(logging.StreamHandler):
         self.stream.write(self.format(record) + "\n", color)
 
 
-class EpsagonHandler(logging.Handler):
-    def emit(self, exception_instance):
-        epsagon.error(exception_instance)
-
-
 logger = None
 
 
@@ -579,12 +572,7 @@ def get_logger():
         log_handler.setLevel(logging.DEBUG)
         log_handler.setFormatter(formatter)
 
-        epsagon_handler = EpsagonHandler()
-        epsagon_handler.setLevel(logging.ERROR)
-        epsagon_handler.setFormatter(formatter)
-
-        for handler in [log_handler, epsagon_handler]:
-            logger.addHandler(handler)
+        logger.addHandler(log_handler)
         logger.setLevel(logging.DEBUG)
         logger.propagate = False
     return logger
@@ -724,8 +712,7 @@ def api_error_handler(func):
     """
     Error handler decorator for thiscovery API endpoints.
     Ensures an AWS lambda function will complete successfully
-    and return a response. Raised exceptions are logged as
-    errors and will therefore still trigger Epsagon alarms.
+    and return a response.
 
     Use with lambda_wrapper as the outer decorator. E.g.:
         @lambda_wrapper
@@ -738,7 +725,7 @@ def api_error_handler(func):
         correlation_id = args[0]["correlation_id"]
         try:
             return func(*args, **kwargs)
-        except DeliberateError as err:  # deliberate errors do not raise an Epsagon alarm
+        except DeliberateError as err:
             error_message = err.args[0]
             return {
                 "statusCode": HTTPStatus.METHOD_NOT_ALLOWED,
