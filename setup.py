@@ -10,8 +10,6 @@ setuptools.setup(
     author_email="support@thiscovery.org",
     description="Thiscovery library",
     install_requires=[
-        "boto3",
-        "botocore",
         "python-dateutil",
         "jsons",
         "python-json-logger",
